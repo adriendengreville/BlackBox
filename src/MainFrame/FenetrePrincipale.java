@@ -40,6 +40,7 @@ public class FenetrePrincipale extends JFrame {
 	 * Create the frame.
 	 */
 	public FenetrePrincipale() {
+		setTitle("BlackBox Project");
 		try
 		{
 		  UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
