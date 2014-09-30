@@ -31,8 +31,10 @@
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="418.0" prefWidth="800.0">
                      <children>
                         <TextArea layoutX="14.0" layoutY="363.0" prefHeight="57.0" prefWidth="646.0" />
-                        <TextFlow layoutX="14.0" layoutY="14.0" prefHeight="331.0" prefWidth="768.0" style="-fx-background-color: grey;" />
+                        <TextFlow layoutX="14.0" layoutY="30.0" prefHeight="315.0" prefWidth="768.0" style="-fx-background-color: grey;" />
                         <Button layoutX="678.0" layoutY="363.0" mnemonicParsing="false" prefHeight="57.0" prefWidth="110.0" text="Envoyer" />
+                        <Text layoutX="14.0" layoutY="19.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Utilisateur courant :" wrappingWidth="112.13671875" />
+                        <Text layoutX="126.0" layoutY="19.0" strokeType="OUTSIDE" strokeWidth="0.0" text="User" wrappingWidth="128.783203125" />
                      </children>
                   </AnchorPane>
             </content>
