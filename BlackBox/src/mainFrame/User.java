@@ -83,5 +83,9 @@ class Client /*implements User*/ {
 		public Client(){
 
 		}//Client CSTR
+		
+		private void setUser(String name){
+		
+		}
 
 }
