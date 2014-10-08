@@ -1,20 +1,16 @@
 package mainFrame;
 
-import java.awt.event.InputEvent;
-import java.util.EventListener;
-
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
-import javafx.scene.input.KeyCode;
 import mainFrame.Main;
 import mainFrame.Client;
-import mainFrame.MultiplePressedKeysEventHandler.MultiKeyEvent;
-import mainFrame.MultiplePressedKeysEventHandler.MultiKeyEventHandler;
 
 public class Controleur {
+	private Client client;
+	
     @FXML
     private TableView<Client> personTable;
     @FXML
@@ -26,18 +22,23 @@ public class Controleur {
     private Label userLabel;
     
     @FXML
-    private TextArea messageBox;
+    public TextArea messageBox = new TextArea();
     @FXML
     private TextArea chatBox;
 
     // Reference to the main application.
-    private Main main;
+    @SuppressWarnings("unused")
+	private Main main;
 
     /**
      * The constructor.
      * The constructor is called before the initialize() method.
      */
     public Controleur() {
+    }
+    
+    public void setMessageBox(String msg){
+    	chatBox.setText(msg);
     }
 
     /**
@@ -60,6 +61,11 @@ public class Controleur {
     	messageBox.setText("");
     }
     
+    @FXML
+    private void connect(){
+    	client = new Client();
+    	client.connect();
+    }
     
     /**
      * Is called by the main application to give a reference back to itself.

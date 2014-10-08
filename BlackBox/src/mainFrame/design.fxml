@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.paint.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.scene.control.*?>
 <?import java.lang.*?>
@@ -8,7 +9,7 @@
 
 <AnchorPane maxHeight="500.0" maxWidth="800.0" minHeight="500.0" minWidth="800.0" prefHeight="500.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mainFrame.Controleur">
    <children>
-      <ToolBar prefHeight="40.0" prefWidth="800.0">
+      <ToolBar prefHeight="40.0" prefWidth="800.0" style="-fx-background-color: #1d1d1d;" stylesheets="@menu.css">
          <items>
             <MenuButton mnemonicParsing="false" text="Client">
               <items>
@@ -16,41 +17,60 @@
                 <MenuItem mnemonicParsing="false" text="Quitter" />
               </items>
             </MenuButton>
-            <MenuButton mnemonicParsing="false" text="Réseau">
-              <items>
-                <MenuItem mnemonicParsing="false" text="Rejoindre un réseau" />
-                <MenuItem mnemonicParsing="false" text="Quitter le réseau" />
-              </items>
-            </MenuButton>
          </items>
       </ToolBar>
-      <TabPane layoutY="40.0" prefHeight="500.0" prefWidth="800.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="-40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
+      <TabPane layoutY="40.0" prefHeight="500.0" prefWidth="800.0" stylesheets="@tab.css" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="-40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
         <tabs>
-          <Tab text="Client">
+          <Tab style="-fx-text-fill: white;" text="Client">
             <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="418.0" prefWidth="800.0">
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="418.0" prefWidth="800.0" style="-fx-background-color: #1d1d1d;">
                      <children>
-                        <TextArea fx:id="messageBox" layoutX="14.0" layoutY="363.0" prefHeight="57.0" prefWidth="646.0" />
-                        <Button layoutX="678.0" layoutY="363.0" mnemonicParsing="false" onAction="#sendClicked" prefHeight="57.0" prefWidth="110.0" text="Envoyer" />
-                        <Text layoutX="14.0" layoutY="19.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Utilisateur courant :" wrappingWidth="112.13671875" />
-                        <Label fx:id="userLabel" layoutX="126.0" layoutY="6.0" prefHeight="17.0" prefWidth="139.0" text="User" />
-                        <TextArea fx:id="chatBox" editable="false" layoutX="14.0" layoutY="36.0" prefHeight="320.0" prefWidth="772.0" />
+                        <TextArea fx:id="messageBox" layoutX="14.0" layoutY="363.0" prefHeight="57.0" prefWidth="646.0" style="-fx-border-radius: 0;" stylesheets="@textArea.css" />
+                        <Button layoutX="678.0" layoutY="363.0" mnemonicParsing="false" onAction="#sendClicked" prefHeight="57.0" prefWidth="110.0" style="-fx-background-color: #1d1d1d; -fx-border-radius: 2; -fx-border-width: 2; -fx-border-color: #e1e1e1;" text="Envoyer" textFill="#e1e1e1">
+                           <font>
+                              <Font name="Segoe UI" size="17.0" />
+                           </font></Button>
+                        <Text fill="#e1e1e1" layoutX="14.0" layoutY="23.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass=".text" text="Utilisateur courant :" wrappingWidth="142.13671875">
+                           <font>
+                              <Font name="Segoe UI" size="16.0" />
+                           </font></Text>
+                        <Label fx:id="userLabel" layoutX="163.0" layoutY="7.0" prefHeight="21.0" prefWidth="497.0" text="User" textFill="#e1e1e1">
+                           <font>
+                              <Font name="Segoe UI" size="16.0" />
+                           </font></Label>
+                        <TextArea fx:id="chatBox" editable="false" focusTraversable="false" layoutX="14.0" layoutY="36.0" prefHeight="320.0" prefWidth="772.0" style="-fx-focus-color: transparent; -fx-border-radius: 0;" styleClass="text-area" stylesheets="@textArea.css" />
+                        <Button layoutX="374.0" layoutY="3.0" mnemonicParsing="false" onAction="#connect" stylesheets="@button.css" text="Rejoindre le réseau" />
+                        <Button layoutX="506.0" layoutY="3.0" mnemonicParsing="false" stylesheets="@button.css" text="Quitter le réseau" />
                      </children>
                   </AnchorPane>
             </content>
           </Tab>
           <Tab text="Serveur">
             <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="427.0" prefWidth="792.0">
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="427.0" prefWidth="792.0" style="-fx-background-color: #1d1d1d;">
                      <children>
                         <TextArea layoutX="114.0" layoutY="19.0" prefHeight="34.0" prefWidth="200.0" />
                         <TextArea layoutX="114.0" layoutY="68.0" prefHeight="34.0" prefWidth="200.0" />
-                        <Button layoutX="465.0" layoutY="28.0" mnemonicParsing="false" prefHeight="68.0" prefWidth="170.0" text="Lancer serveur" />
-                        <TextFlow layoutX="256.0" layoutY="136.0" prefHeight="267.0" prefWidth="507.0" style="-fx-background-color: red;" />
-                        <Text layoutX="14.0" layoutY="123.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Connectés" wrappingWidth="122.13671875" />
-                        <Text layoutX="256.0" layoutY="123.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Log" wrappingWidth="63.0" />
-                        <Text layoutX="14.0" layoutY="41.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Nom serveur" />
-                        <Text layoutX="14.0" layoutY="90.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Mot de passe" wrappingWidth="121.408203125" />
+                        <Button layoutX="473.0" layoutY="24.0" mnemonicParsing="false" prefHeight="68.0" prefWidth="170.0" style="-fx-background-color: #1d1d1d; -fx-border-radius: 2; -fx-border-color: #e1e1e1; -fx-border-width: 2;" text="Lancer serveur" textFill="#e1e1e1">
+                           <font>
+                              <Font name="Segoe UI" size="17.0" />
+                           </font></Button>
+                        <Text fill="#e1e1e1" layoutX="14.0" layoutY="123.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Connectés" wrappingWidth="122.13671875">
+                           <font>
+                              <Font name="Segoe UI" size="16.0" />
+                           </font></Text>
+                        <Text fill="#e1e1e1" layoutX="256.0" layoutY="123.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Log" wrappingWidth="63.0">
+                           <font>
+                              <Font name="Segoe UI" size="16.0" />
+                           </font></Text>
+                        <Text fill="#e1e1e1" layoutX="14.0" layoutY="41.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Nom serveur">
+                           <font>
+                              <Font name="Segoe UI" size="16.0" />
+                           </font></Text>
+                        <Text fill="#e1e1e1" layoutX="14.0" layoutY="90.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Mot de passe" wrappingWidth="121.408203125">
+                           <font>
+                              <Font name="Segoe UI" size="16.0" />
+                           </font></Text>
                         <Pane layoutX="14.0" layoutY="136.0" prefHeight="267.0" prefWidth="232.0">
                            <children>
                               <TableView prefHeight="268.0" prefWidth="235.0">
@@ -61,6 +81,7 @@
                               </TableView>
                            </children>
                         </Pane>
+                        <TextArea editable="false" focusTraversable="false" layoutX="256.0" layoutY="136.0" prefHeight="267.0" prefWidth="531.0" stylesheets="@textArea.css" />
                      </children>
                   </AnchorPane>
             </content>

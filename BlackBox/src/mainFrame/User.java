@@ -1,30 +1,24 @@
 package mainFrame;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Vector;
 
 import javafx.beans.property.StringProperty;
 
-//public interface User {
-//	//MÉTHODES
-//		int encrypt (int publicKey);
-//		int decrypt (int privateKey);
-//		
-//		void setPrivateKey(int privateKey);
-//		int getPrivateKey();
-//		
-//		void setPublicKey(int publicKey);
-//		int getPublicKey();
-//		
-//		void computeRSA_Key();
-//}//IUser
 
 class Client /*implements User*/ {
 	//ATTRIBUTS
-		private StringProperty pseudo; 
-		private StringProperty password;
+		private String pseudo;  
+		private String password;
 		
 		private String message;  
 		
+		private InetAddress adresseCL;
+		private InetAddress adresseS;
+				
 		/*private Vector<Integer>*/ 
 		int serverPrivateKey;
 		int serverPublicKey;
@@ -32,6 +26,8 @@ class Client /*implements User*/ {
 		int clientPublicKey;
 		
 		private StringProperty serverAdress;
+		
+		private Controleur ctrl;
 	
 	//MÉTHODES
 		public int encrypt(int publicKey) {
@@ -81,11 +77,30 @@ class Client /*implements User*/ {
 		}
 		
 		public Client(){
-
+			Socket socketCL;
+			
+			try{
+				socketCL = new Socket(InetAddress.getLocalHost(), 6969);
+					socketCL.close();
+			}catch (UnknownHostException e){
+				e.printStackTrace();
+			}catch (IOException e){
+				e.printStackTrace();
+			}
 		}//Client CSTR
 		
 		private void setUser(String name){
+			this.pseudo = name;
+		}
 		
+		public void connect(){
+			//adresseCL = InetAddress.getLocalHost();
+			ctrl = new Controleur();
+			ctrl.setMessageBox("coucou");	
+		}
+		
+		private void send(){
+			
 		}
 
 }
