@@ -18,12 +18,16 @@ public class Controleur {
 		
 		//Attributs du client
 	    @FXML	//le @FXML permet de faire comprendre � JavaFX que l'attribut ou m�thode suivant est directement li� � l'UI
-	    private Label userLabel;
+	    private TextArea userField;
 	    @FXML
 	    public TextArea messageBox = new TextArea();
 	    @FXML
 	    private TextArea chatBox;
-	
+	    @FXML
+	    private TextArea ipField;
+	    @FXML
+	    private TextArea mdpField;
+	    
 	    //Attributs du serveur
 	    @FXML
 	    private TextArea serverName;
@@ -56,14 +60,14 @@ public class Controleur {
 	     */
 	    @FXML
 	    private void initialize() {
-	        userLabel.setText("JK DE LA MONTAGNE");
+	        userField.setText("JK DE LA MONTAGNE");
 	    }
 	    
 	    //Client-------------------------------------------------------------------------------------------------------------------
 	    @FXML
 	    private void sendClicked(){			//enregistre l'action du clic sur le bouton envoyer du chat
 	    	String tmp = new String(chatBox.getText());
-	    	tmp += userLabel.getText() + " : ";
+	    	tmp += userField.getText() + " : ";
 	    	tmp += messageBox.getText() + "\n";
 	    	
 	    	chatBox.setText(tmp);
@@ -73,7 +77,7 @@ public class Controleur {
 	    
 	    @FXML
 	    private void connect(){			//enregistre l'action du clic sur le bouton connecter � un r�seau
-	    	client = new Client(null, 0, null);
+	    	client = new Client(ipField.getText(), 6969, null);
 	    	client.start();
 	    }//connect
 	    

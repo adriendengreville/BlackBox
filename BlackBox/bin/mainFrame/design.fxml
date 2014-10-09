@@ -24,13 +24,12 @@
                            <font>
                               <Font name="Segoe UI" size="16.0" />
                            </font></Text>
-                        <Label fx:id="userLabel" layoutX="163.0" layoutY="7.0" prefHeight="21.0" prefWidth="497.0" text="User" textFill="#e1e1e1">
-                           <font>
-                              <Font name="Segoe UI" size="16.0" />
-                           </font></Label>
                         <TextArea fx:id="chatBox" editable="false" focusTraversable="false" layoutX="14.0" layoutY="36.0" prefHeight="320.0" prefWidth="772.0" style="-fx-focus-color: transparent; -fx-border-radius: 0;" styleClass="text-area" stylesheets="@textArea.css" />
-                        <Button layoutX="374.0" layoutY="3.0" mnemonicParsing="false" onAction="#connect" stylesheets="@button.css" text="Rejoindre le réseau" />
-                        <Button layoutX="506.0" layoutY="3.0" mnemonicParsing="false" onAction="#disconnect" stylesheets="@button.css" text="Quitter le réseau" />
+                        <Button layoutX="538.0" layoutY="4.0" mnemonicParsing="false" onAction="#connect" stylesheets="@button.css" text="Rejoindre le réseau" />
+                        <Button layoutX="679.0" layoutY="4.0" mnemonicParsing="false" onAction="#disconnect" stylesheets="@button.css" text="Quitter le réseau" />
+                        <TextArea fx:id="ipField" layoutX="290.0" layoutY="12.0" prefHeight="15.0" prefWidth="95.0" promptText="IP" />
+                        <TextArea fx:id="mdpField" layoutX="400.0" layoutY="12.0" prefHeight="15.0" prefWidth="115.0" promptText="Mot de passe" />
+                        <TextArea fx:id="userField" layoutX="156.0" layoutY="8.0" prefHeight="20.0" prefWidth="124.0" promptText="Pseudo" />
                      </children>
                   </AnchorPane>
             </content>
