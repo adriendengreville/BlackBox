@@ -3,6 +3,7 @@
  */
 package mainFrame;
 
+import java.math.BigInteger;
 import java.util.Vector;
 
 public class Cryptage {
@@ -10,7 +11,7 @@ public class Cryptage {
 		int privateKey;
 		int publicKey;
 		
-		Vector<Integer> tablePr;
+		Vector<Integer> tablePr = new Vector<Integer>();
 	
 	//MÉTHODES
 		public int encrypt(int publicKey) {
@@ -24,7 +25,31 @@ public class Cryptage {
 		}
 	
 		public void computeRSA_Key() {
+			Integer p1;
+			Integer q1;
+			BigInteger p;
+			BigInteger q;
+			BigInteger n;
+			BigInteger phi;
 			
+			genererPremier();		//on etabli la liste de nombres premiers
+			
+			p1 = tablePr.get((int) (Math.random() * tablePr.size()));
+			
+			do{	//on retente jusqu'à ce que p < q
+				q1 = tablePr.get((int) (Math.random() * tablePr.size()));
+			}while (p1 > q1);
+			
+			p = new BigInteger(p1.toString());
+			q = new BigInteger(q1.toString());
+			
+			n 	= p.multiply(q);
+			phi = (p.subtract(new BigInteger())) * (q1 - 1);
+			
+			System.out.println("p = " + p1 + "\n"+
+					"q = " + q1 + "\n"+
+					"n = " + n + "\n"+
+					"phi = " + phi + "\n");
 		}
 		
 		private void genererPremier() {
@@ -53,6 +78,29 @@ public class Cryptage {
 			}
 		}//genererPremier
 		
+		private boolean isPremier(int number){
+			int nb 		 = number;
+			int compter  = 0;
+			boolean test = false;
+			int limite 	 = (int) (Math.sqrt(nb) + 1);
+			
+			if (nb % 2 == 0){
+				test = true;
+			}else{
+				for (int i = 3; i < limite; i += 2, compter++){
+					if (nb % i == 0)
+						test = true;
+				}
+			}
+			
+			if (!test)
+				System.out.println(nb + " nombre premier, nombre iterations = " + compter);
+			else
+				System.out.println(nb + " n'est pas premier.");
+			
+			return !test;
+		}
+		
 	//SET-GETTER
 		public void setPrivateKey(int privateKey) {
 			this.privateKey = privateKey;
@@ -72,7 +120,9 @@ public class Cryptage {
 		
 	public static void main(String[] args) {
         Cryptage test = new Cryptage();
-        test.genererPremier();
+        test.computeRSA_Key();
+//        test.genererPremier();
+//        test.isPremier(test.tablePr.get((int) (Math.random() * test.tablePr.size())));
         
     }
 }
