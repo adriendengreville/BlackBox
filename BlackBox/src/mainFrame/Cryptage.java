@@ -44,7 +44,7 @@ public class Cryptage {
 			q = new BigInteger(q1.toString());
 			
 			n 	= p.multiply(q);
-			phi = (p.subtract(new BigInteger())) * (q1 - 1);
+			phi = (p.subtract(new BigInteger("1"))).multiply((q.subtract(new BigInteger("1"))));
 			
 			System.out.println("p = " + p1 + "\n"+
 					"q = " + q1 + "\n"+
