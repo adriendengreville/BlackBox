@@ -49,7 +49,7 @@ public class Main extends Application {
 	            loader.setLocation(Main.class.getResource("Fenetre.fxml"));
 	            rootLayout = (BorderPane) loader.load();
 	
-	            rootLayout.setOnMousePressed(new EventHandler<MouseEvent>() {
+	            rootLayout.setOnMousePressed(new EventHandler<MouseEvent>() {	//les deux prochaines procédures permettent de déplacer la fenetre sans avoir de bordure
 
 					@Override
 					public void handle(MouseEvent event) {
