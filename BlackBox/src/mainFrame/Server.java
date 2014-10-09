@@ -64,8 +64,9 @@ public class Server {
 			{
 				// format message saying we are waiting
 				display("Server waiting for Clients on port " + port + ".");
-				
-				Socket socket = serverSocket.accept();  	// accept connection
+				Socket socket = null;
+				//socket.setReuseAddress(true);
+				socket = serverSocket.accept();  	// accept connection
 				// if I was asked to stop
 				if(!keepGoing)
 					break;

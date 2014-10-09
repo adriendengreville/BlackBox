@@ -3,6 +3,8 @@
  */
 package mainFrame;
 
+import javax.swing.SwingUtilities;
+
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -15,7 +17,7 @@ import mainFrame.Client;
 public class Controleur {
 	//ATTRIBUTS
 		private Client client;
-		private Server server;
+		private Server server = null;
 		
 		//Attributs du client
 	    @FXML	//le @FXML permet de faire comprendre � JavaFX que l'attribut ou m�thode suivant est directement li� � l'UI
@@ -74,12 +76,28 @@ public class Controleur {
 	    	chatBox.setText(tmp);
 	    	
 	    	messageBox.setText("");
+	    	// just have to send the message
+	    	client.sendMessage(new ChatMessage(ChatMessage.MESSAGE, chatBox.getText()));				
+
 	    }//sentClicked
 	    
 	    @FXML
 	    private void connect(){			//enregistre l'action du clic sur le bouton connecter � un r�seau
-	    	client = new Client(ipField.getText(), 6969, null);
-	    	client.start();
+	    	// ok it is a connection request
+	    	String username = userField.getText().trim();
+	    	// empty username ignore it
+	    	if(username.length() == 0)
+	    	return;
+	    	// empty serverAddress ignore it
+	    	String server = ipField.getText().trim();
+	    	if(server.length() == 0)
+	    	return;
+	    	// try creating a new Client with GUI
+	    	client = new Client(server, 6969, username, this);
+	    	// test if we can start the Client
+	    	if(!client.start()) 
+	    	return;
+	    	chatBox.setText("");
 	    }//connect
 	    
 	    @FXML							//enregistre le clic sur le bouton d�connecter
@@ -93,13 +111,54 @@ public class Controleur {
 	    	Platform.exit();
 	    }
 	    
+	 // called by the Client to append text in the TextArea 
+		void append(String str) {
+			chatBox.appendText(str);
+			chatBox.positionCaret(chatBox.getText().length() - 1);
+		}
+	    
 
 	    //Serveur-------------------------------------------------------------------------------------------------------------------
 	    @FXML
 	    private void startServer(){		//enregistre le clic sur lancer
-	    	server = new Server(6969, null);
-	    	server.start();
+	    	Platform.runLater(new Runnable() {
+		        @Override
+		        public void run() {
+		        	// if running we have to stop
+					if(server != null) {
+						server.stop();
+						server = null;
+						return;
+					}
+			      	// OK start the server
+					// ceate a new Server
+					server = new Server(6969);
+					// and start it as a thread
+					new ServerRunning().start();
+			    	server = new Server(6969, null);
+			    	server.start();
+		        }
+				});
+	    	
 	    }
+	    
+		/*
+		 * A thread to run the Server
+		 */
+		class ServerRunning extends Thread {
+			public void run() {
+				Platform.runLater(new Runnable() {
+		        @Override
+		        public void run() {
+		        	server.start();     // should execute until if fails
+					// the server failed
+					appendEvent("Server crashed\n");
+					server = null;
+		        }
+				});
+			}
+		}
+		
 	    /**
 	     * Is called by the main application to give a reference back to itself.
 	     * 
