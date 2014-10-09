@@ -30,7 +30,7 @@
                            </font></Label>
                         <TextArea fx:id="chatBox" editable="false" focusTraversable="false" layoutX="14.0" layoutY="36.0" prefHeight="320.0" prefWidth="772.0" style="-fx-focus-color: transparent; -fx-border-radius: 0;" styleClass="text-area" stylesheets="@textArea.css" />
                         <Button layoutX="374.0" layoutY="3.0" mnemonicParsing="false" onAction="#connect" stylesheets="@button.css" text="Rejoindre le réseau" />
-                        <Button layoutX="506.0" layoutY="3.0" mnemonicParsing="false" stylesheets="@button.css" text="Quitter le réseau" />
+                        <Button layoutX="506.0" layoutY="3.0" mnemonicParsing="false" onAction="#disconnect" stylesheets="@button.css" text="Quitter le réseau" />
                      </children>
                   </AnchorPane>
             </content>
@@ -39,9 +39,9 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="427.0" prefWidth="792.0" style="-fx-background-color: #1d1d1d;">
                      <children>
-                        <TextArea layoutX="114.0" layoutY="19.0" prefHeight="34.0" prefWidth="200.0" />
-                        <TextArea layoutX="114.0" layoutY="68.0" prefHeight="34.0" prefWidth="200.0" />
-                        <Button layoutX="473.0" layoutY="24.0" mnemonicParsing="false" prefHeight="68.0" prefWidth="170.0" style="-fx-background-color: #1d1d1d; -fx-border-radius: 2; -fx-border-color: #e1e1e1; -fx-border-width: 2;" text="Lancer serveur" textFill="#e1e1e1">
+                        <TextArea fx:id="serverName" layoutX="114.0" layoutY="19.0" prefHeight="34.0" prefWidth="200.0" />
+                        <TextArea fx:id="serverPwd" layoutX="114.0" layoutY="68.0" prefHeight="34.0" prefWidth="200.0" />
+                        <Button layoutX="473.0" layoutY="24.0" mnemonicParsing="false" onAction="#startServer" prefHeight="68.0" prefWidth="170.0" style="-fx-background-color: #1d1d1d; -fx-border-radius: 2; -fx-border-color: #e1e1e1; -fx-border-width: 2;" text="Lancer serveur" textFill="#e1e1e1">
                            <font>
                               <Font name="Segoe UI" size="17.0" />
                            </font></Button>
@@ -63,15 +63,15 @@
                            </font></Text>
                         <Pane layoutX="14.0" layoutY="136.0" prefHeight="267.0" prefWidth="232.0">
                            <children>
-                              <TableView prefHeight="268.0" prefWidth="235.0">
+                              <TableView fx:id="userTable" prefHeight="268.0" prefWidth="235.0">
                                 <columns>
-                                  <TableColumn prefWidth="122.0" text="Pseudo" />
-                                  <TableColumn prefWidth="112.0" text="IP" />
+                                  <TableColumn fx:id="pseudos" prefWidth="122.0" text="Pseudo" />
+                                  <TableColumn fx:id="ips" prefWidth="112.0" text="IP" />
                                 </columns>
                               </TableView>
                            </children>
                         </Pane>
-                        <TextArea editable="false" focusTraversable="false" layoutX="256.0" layoutY="136.0" prefHeight="267.0" prefWidth="531.0" stylesheets="@textArea.css" />
+                        <TextArea fx:id="logs" editable="false" focusTraversable="false" layoutX="256.0" layoutY="136.0" prefHeight="267.0" prefWidth="531.0" stylesheets="@textArea.css" />
                      </children>
                   </AnchorPane>
             </content>

@@ -1,5 +1,5 @@
 /*
- * Description : Cette classe permet de contrôler l'UI du serveur et du client
+ * Description : Cette classe permet de contrï¿½ler l'UI du serveur et du client
  */
 package mainFrame;
 
@@ -17,7 +17,7 @@ public class Controleur {
 		private Client client;
 		
 		//Attributs du client
-	    @FXML	//le @FXML permet de faire comprendre à JavaFX que l'attribut ou méthode suivant est directement lié à l'UI
+	    @FXML	//le @FXML permet de faire comprendre ï¿½ JavaFX que l'attribut ou mï¿½thode suivant est directement liï¿½ ï¿½ l'UI
 	    private Label userLabel;
 	    @FXML
 	    public TextArea messageBox = new TextArea();
@@ -41,7 +41,7 @@ public class Controleur {
 	    @SuppressWarnings("unused")
 		private Main main;
 	
-	//MÉTHODES
+	//Mï¿½THODES
 	    /**
 	     * The constructor.
 	     * The constructor is called before the initialize() method.
@@ -72,19 +72,19 @@ public class Controleur {
 	    }//sentClicked
 	    
 	    @FXML
-	    private void connect(){			//enregistre l'action du clic sur le bouton connecter à un réseau
-	    	client = new Client();
-	    	client.connect();
+	    private void connect(){			//enregistre l'action du clic sur le bouton connecter ï¿½ un rï¿½seau
+	    	client = new Client(null, 0, null);
+	    	client.start();
 	    }//connect
 	    
-	    @FXML							//enregistre le clic sur le bouton déconnecter
+	    @FXML							//enregistre le clic sur le bouton dï¿½connecter
 	    private void disconnect(){
 	    	
 	    }//disconnect
 	    
 	    @FXML
 	    private void quit(){			//enregistre l'action du clic sur le bouton quitter
-	    	//mettre ce qu'il faut pour ne pas planter le système en cas d'arrêt de l'appli
+	    	//mettre ce qu'il faut pour ne pas planter le systï¿½me en cas d'arrï¿½t de l'appli
 	    	Platform.exit();
 	    }
 	    
