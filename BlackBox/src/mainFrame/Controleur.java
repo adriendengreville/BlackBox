@@ -15,6 +15,7 @@ import mainFrame.Client;
 public class Controleur {
 	//ATTRIBUTS
 		private Client client;
+		private Server server;
 		
 		//Attributs du client
 	    @FXML	//le @FXML permet de faire comprendre � JavaFX que l'attribut ou m�thode suivant est directement li� � l'UI
@@ -96,7 +97,8 @@ public class Controleur {
 	    //Serveur-------------------------------------------------------------------------------------------------------------------
 	    @FXML
 	    private void startServer(){		//enregistre le clic sur lancer
-	    	
+	    	server = new Server(6969, null);
+	    	server.start();
 	    }
 	    /**
 	     * Is called by the main application to give a reference back to itself.
@@ -108,4 +110,10 @@ public class Controleur {
 	
 	        //userLabel.setText("JK DE LA MONTAGNE");
 	    }
+	    
+		void appendEvent(String str) {
+			logs.appendText(str);
+			logs.positionCaret(chatBox.getText().length() - 1);
+			
+		}
 	}

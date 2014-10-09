@@ -12,7 +12,7 @@ import java.net.UnknownHostException;
 import java.util.Scanner;
 import java.util.Vector;
 
-import Client.ListenFromServer;
+//import Client.ListenFromServer;
 import javafx.beans.property.StringProperty;
 
 class Client /*implements User*/ {
@@ -27,7 +27,7 @@ class Client /*implements User*/ {
 		private Socket socket;
 
 		// if I use a GUI or not
-		private ClientGUI cg;
+		private Controleur cg;
 		
 		// the server, the port and the username
 		
@@ -35,19 +35,20 @@ class Client /*implements User*/ {
 		
 		Client(String server, int port, String username) {
 			// which calls the common constructor with the GUI set to null
-			this(server, port, username/*, null*/);
+			
+			this.servername = server;
+			this.port = port;
+			this.username = username;
+			// save if we are in GUI mode or not
+			this.cg = cg;
 		}
 
 		/*
 		 * Constructor call when used from a GUI
 		 * in console mode the ClienGUI parameter is null
 		 */
-		Client(String server, int port, String username, ClientGUI cg) {
-			this.server = server;
-			this.port = port;
-			this.username = username;
-			// save if we are in GUI mode or not
-			this.cg = cg;
+		Client(String server, int port, String username, Controleur cg) {
+			this(server, port, username);
 		}
 		
 		/*
@@ -56,7 +57,7 @@ class Client /*implements User*/ {
 		public boolean start() {
 			// try to connect to the server
 			try {
-				socket = new Socket(server, port);
+				socket = new Socket(servername, port);
 			} 
 			// if it failed not much I can so
 			catch(Exception ec) {
@@ -102,7 +103,7 @@ class Client /*implements User*/ {
 			if(cg == null)
 				System.out.println(msg);      // println in console mode
 			else
-				cg.append(msg + "\n");		// append to the ClientGUI JTextArea (or whatever)
+				cg.appendEvent(msg + "\n");		// append to the ClientGUI JTextArea (or whatever)
 		}
 		
 		/*
@@ -137,8 +138,11 @@ class Client /*implements User*/ {
 			
 			// inform the GUI
 			if(cg != null)
-				cg.connectionFailed();
+				disconnectClient();
 				
+		}
+		public void disconnectClient(){
+			
 		}
 		/*
 		 * To start the Client in console mode use one of the following command
@@ -160,7 +164,7 @@ class Client /*implements User*/ {
 		 */
 		public static void main(String[] args) {
 			// default values
-			int portNumber = 1500;
+			int portNumber = 6969;
 			String serverAddress = "localhost";
 			String userName = "Anonymous";
 
@@ -238,13 +242,13 @@ class Client /*implements User*/ {
 							System.out.print("> ");
 						}
 						else {
-							cg.append(msg);
+							cg.appendEvent(msg);
 						}
 					}
 					catch(IOException e) {
 						display("Server has close the connection: " + e);
 						if(cg != null) 
-							cg.connectionFailed();
+							disconnectClient();
 						break;
 					}
 					// can't happen with a String object but need the catch anyhow
