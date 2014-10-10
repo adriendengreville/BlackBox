@@ -10,12 +10,15 @@ import java.util.Vector;
 
 public class Cryptage {
 	//ATTRIBUTS
-		BigInteger commonKey;
-		BigInteger privateKey;
-		BigInteger publicKey;
-		Vector<Byte> tableCodee;
+		BigInteger 		commonKey;
+		BigInteger 		privateKey;
+		BigInteger 		publicKey;
+		Vector<Byte> 	tableCodee;
 		
 		Vector<Integer> tablePr = new Vector<Integer>();
+		
+		Vector<BigInteger> 	cypherTab;
+		String 				plainPhrase; 
 	
 	//MÉTHODES
 		
@@ -23,26 +26,37 @@ public class Cryptage {
 			genererPremier(); 	//on etablit la liste des nombres premiers
 		}
 		
-		public BigInteger encrypt(String message) {
-			
-			
-			byte[] tableByte = message.getBytes(/*Charset.forName("US-ASCII")*/);	//on converti la String en un tableau de byte
-			
-			tableByte = ajoutByte(tableByte);										//on ajoute un byte valant 1 pour éviter de se retrouver avec un bigInt négatif
-
-			BigInteger bigByte = new BigInteger(tableByte);							//on stocke le tableau généré dans un BigInteger
-			bigByte = bigByte.modPow(publicKey, commonKey); 						//on code le big integer avec les clés publiques et communes
+		public BigInteger encrypt(char carac) {							//permet d'encoder un char en big integer avec les clés
+			String 	   caracSTR = "" + carac; 										//on stock le char dans une string
+			BigInteger bigByte 	= new BigInteger(caracSTR.getBytes());				//on stocke la strink généré dans un BigInteger
+			bigByte 			= bigByte.modPow(publicKey, commonKey); 			//on code le big integer avec les clés publiques et communes
 			
 			return bigByte;
-		}
+		}//encrypt(char)
+		
+		public Vector<BigInteger> encrypt (String plainPhrase){			//permet le traitement d'une String pour l'encoder den un table de big Int
+			Vector<BigInteger> cypherMessage = new Vector<BigInteger>();			
+			
+			for (int i = 0; i < plainPhrase.length(); i++)							//pour chaque caractere de la chaine
+				cypherMessage.add(this.encrypt(plainPhrase.charAt(i)));				//on encode encode via la méthode encrypt(char) et on stocke
 	
-		public String decrypt(BigInteger messageCode) {
+			return cypherMessage;													//et on retourne ce magnifique vector plein de lettres encodées
+		}//encrypt(String)
+	
+		public String decrypt(BigInteger messageCode) {					//permet de décoder les BigInteger avec les clés
 			messageCode = messageCode.modPow(privateKey, commonKey);				//on decode le big integer avec les clés privées et communes
 			
-			byte[] decrypted = removeByte(messageCode.toByteArray());				//on supprimer le byte en plus
+			return new String(messageCode.toByteArray());						
+		}//decrypt(BigInteger)
+		
+		public String decrypt(Vector<BigInteger> cypherTab){		//permet le traitement d'un Vector de BigInteger pour le décoder
+			String plainPhrase = "";
 			
-			return new String(decrypted);
-		}
+			for(int i = 0; i < cypherTab.size(); i++)								//pour chaque élément du tableau
+				plainPhrase += decrypt(cypherTab.elementAt(i));						//on décode et on range dans la String
+			
+			return plainPhrase;
+		}//decrypt(Vector<BigInteger)
 	
 		public void computeRSA_Key() {
 			Integer p1;
@@ -191,6 +205,10 @@ public class Cryptage {
 		    return toEdit;
 		}
 		
+		public void convert (){
+			
+		}//convert(Vector<BigInteger>)
+		
 	//SET-GETTER
 		public void setPrivateKey(BigInteger privateKey) {
 			this.privateKey = privateKey;
@@ -211,12 +229,18 @@ public class Cryptage {
 	public static void main(String[] args) {
         Cryptage test = new Cryptage();
         test.computeRSA_Key();
-//        test.genererPremier();
-//        test.isPremier(test.tablePr.get((int) (Math.random() * test.tablePr.size())));
-		String messageTest = "b ns";
-        BigInteger hello = test.encrypt(messageTest);
-        System.out.print(hello);
+		String messageTest = "Bonjour je parle avec des accents et tout tà";
+		
+		test.cypherTab = test.encrypt(messageTest);
+		
+        System.out.print(test.cypherTab.toString());
         
-        System.out.println("\nMessage décodé : " + test.decrypt(hello));
+        String transfert = test.cypherTab.toString();
+//        Vector<BigInteger> transfertSuite = transfert;
+        
+        test.plainPhrase = test.decrypt(test.cypherTab);
+        
+        System.out.println("\nMessage décodé : " + test.plainPhrase);
+
     }
 }
