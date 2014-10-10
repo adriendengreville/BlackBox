@@ -26,9 +26,9 @@ public class Cryptage {
 			genererPremier(); 	//on etablit la liste des nombres premiers (À REMPLACER PAR UNE LECTURE DE FICHIER POUR GAIN DE TEMPS)
 		}//cryptageCSTR
 		
-		public BigInteger encrypt(char carac) {							//permet d'encoder un char en big integer avec les clés
-			String 	   caracSTR = "" + carac; 										//on stock le char dans une string
-			BigInteger bigByte 	= new BigInteger(caracSTR.getBytes());				//on stocke la strink généré dans un BigInteger
+		private BigInteger encrypt(char carac) {							//permet d'encoder un char en big integer avec les clés
+			String 	   caracSTR = "" + carac; 										//on stock le char dans une string 
+			BigInteger bigByte 	= new BigInteger(ajoutByte(caracSTR.getBytes()));	//on stocke la string générée dans un BigInteger (on en profite pour ajouter un byte valant 1 au début pour ne pas fuck up les caractères spéciaux)
 			bigByte 			= bigByte.modPow(publicKey, commonKey); 			//on code le big integer avec les clés publiques et communes
 			
 			return bigByte;
@@ -43,9 +43,10 @@ public class Cryptage {
 			return cypherMessage;													//et on retourne ce magnifique vector plein de lettres encodées
 		}//encrypt(String)
 	
-		public String decrypt(BigInteger messageCode) {					//permet de décoder les BigInteger avec les clés
+		private String decrypt(BigInteger messageCode) {				//permet de décoder les BigInteger avec les clés
 			messageCode = messageCode.modPow(privateKey, commonKey);				//on decode le big integer avec les clés privées et communes
-			
+			messageCode = new BigInteger(removeByte(messageCode.toByteArray()));	//on retire le byte ajouté au début lors de l'encryption
+
 			return new String(messageCode.toByteArray());						
 		}//decrypt(BigInteger)
 		
@@ -178,7 +179,7 @@ public class Cryptage {
 				return a.intValue();
 		}//PGCD
 		
-		BigInteger pow(BigInteger base, BigInteger exponent) {					//permet de calculer BigInteger puissance(BigInteger) 
+		private BigInteger pow(BigInteger base, BigInteger exponent) {					//permet de calculer BigInteger puissance(BigInteger) 
 			BigInteger result = BigInteger.ONE;
 			while (exponent.signum() > 0) {
 				if (exponent.testBit(0)) result = result.multiply(base);
@@ -264,7 +265,7 @@ public class Cryptage {
 	public static void main(String[] args) {
 		Cryptage test = new Cryptage();
         test.computeRSA_Key();
-		String messageTest = "Bonjour je parle avec des accents et tout. Bon y a pas trop d'accents mais au moins je peux crypter une phrase de deux kilomètres.";
+		String messageTest = "Bonjour je pärle avec des accents et tout. Bon y a pas trop d'accents mais au moins je peux crypter une phrase de deux kilomètres.";
 		
 		test.cypherTab = test.encrypt(messageTest);
 		
