@@ -13,14 +13,24 @@ public class ChatMessage implements Serializable {
 	// WHOISIN to receive the list of the users connected
 	// MESSAGE an ordinary message
 	// LOGOUT to disconnect from the Server
-	static final int PASSWORD = 0, MESSAGE = 1, LOGOUT = 2;
+	// KEYS pour l'échange de clés
+	static final int PASSWORD = 0, MESSAGE = 1, LOGOUT = 2, KEYCommon = 3, KEYPublic = 4, KEYPrivate = 5;
 	private int type;
 	private String message;
+	private String dest;
+	private String timeStamp;
+	private String sender;
 	
 	// constructor
 	ChatMessage(int type, String message) {
 		this.type = type;
 		this.message = message;
+		this.sender = "null";
+	}
+	
+	public ChatMessage(int type, String message, String dest) {
+		super();
+		this.dest = dest;
 	}
 	
 	// getters
@@ -29,6 +39,34 @@ public class ChatMessage implements Serializable {
 	}
 	String getMessage() {
 		return message;
+	}
+	
+	void setMessage(String msg){
+		this.message = msg;
+	}
+	
+	String getDest(){
+		return this.dest;
+	}
+	
+	void setDest(String dest){
+		this.dest = dest;
+	}
+	
+	void setTimeStamp(String time){
+		this.timeStamp = time;
+	}
+	
+	String getTimeStamp(){
+		return this.timeStamp;
+	}
+	
+	void setSender(String sender){
+		this.sender = sender;
+	}
+	
+	String getSender(){
+		return this.sender;
 	}
 }
 

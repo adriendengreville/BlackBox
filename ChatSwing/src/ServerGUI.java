@@ -15,8 +15,7 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
 	// The port number
 	private JPasswordField password;
 	// my server
-	private Server server;
-	
+	private Server server;	
 	
 	// server constructor that receive the port to listen to for connection as parameter
 	ServerGUI(int port) {
@@ -79,7 +78,7 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
       	// OK start the server	
 		int port = 6969;
 		// ceate a new Server
-		server = new Server(6969, this);
+		server = new Server(port, this);
 		// and start it as a thread
 		new ServerRunning().start();
 		stopStart.setText("Stop");
@@ -127,7 +126,7 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
 			// the server failed
 			stopStart.setText("Start");
 			password.setEditable(true);
-			appendEvent("Server crashed\n");
+//			appendEvent("Server crashed\n");
 			server = null;
 		}
 	}

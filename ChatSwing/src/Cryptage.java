@@ -10,15 +10,15 @@ import java.util.Vector;
 
 public class Cryptage {
 	//ATTRIBUTS
-		BigInteger 		commonKey;
-		BigInteger 		privateKey;
-		BigInteger 		publicKey;
-		Vector<Byte> 	tableCodee;
+		private BigInteger 		commonKey;
+		private BigInteger 		privateKey;
+		private BigInteger 		publicKey;
+//		private Vector<Byte> 	tableCodee;
 		
-		Vector<Integer> tablePr = new Vector<Integer>();
+		private Vector<Integer> tablePr = new Vector<Integer>();
 		
-		Vector<BigInteger> 	cypherTab;
-		String 				plainPhrase; 
+//		private Vector<BigInteger> 	cypherTab;
+//		private String 				plainPhrase; 
 	
 	//MÉTHODES
 		
@@ -242,42 +242,42 @@ public class Cryptage {
 			this.privateKey = privateKey;
 		}//setPrivateKey
 	
-		public BigInteger getPrivateKey() {
-			return this.privateKey;
+		public String getPrivateKey() {
+			return this.privateKey.toString();
 		}//getPrivateKey
 	
 		public void setPublicKey(BigInteger publicKey) {
 			this.publicKey = publicKey;
 		}//setPublicKey
 	
-		public BigInteger getPublicKey() {
-			return this.publicKey;
+		public String getPublicKey() {
+			return this.publicKey.toString();
 		}//getPublicKey
 		
 		public void setCommonKey(BigInteger commonKey) {
 			this.commonKey = commonKey;
 		}//setCommonKey
 	
-		public BigInteger getCommonKey() {
-			return this.commonKey;
+		public String getCommonKey() {
+			return this.commonKey.toString();
 		}//getCommonKey
 		
-	public static void main(String[] args) {
-		Cryptage test = new Cryptage();
-        test.computeRSA_Key();
-		String messageTest = "Bonjour je pärle avec des accents et tout. Bon y a pas trop d'accents mais au moins je peux crypter une phrase de deux kilomètres.";
-		
-		test.cypherTab = test.encrypt(messageTest);
-		
-//        System.out.print(test.cypherTab.toString());
-        
-        String transfert = test.cypherTab.toString();
-        
-//        Vector<BigInteger> transfertSuite = test.convert(transfert);
-        
-        test.plainPhrase = test.decrypt(test.convert(transfert));
-        
-        System.out.println("\nMessage décodé : " + test.plainPhrase);
-
-    }
+//	public static void main(String[] args) {
+//		Cryptage test = new Cryptage();
+//        test.computeRSA_Key();
+//		String messageTest = "Bonjour je pärle avec des accents et tout. Bon y a pas trop d'accents mais au moins je peux crypter une phrase de deux kilomètres.";
+//		
+//		test.cypherTab = test.encrypt(messageTest);
+//		
+////        System.out.print(test.cypherTab.toString());
+//        
+//        String transfert = test.cypherTab.toString();
+//        
+////        Vector<BigInteger> transfertSuite = test.convert(transfert);
+//        
+//        test.plainPhrase = test.decrypt(test.convert(transfert));
+//        
+//        System.out.println("\nMessage décodé : " + test.plainPhrase);
+//
+//    }
 }

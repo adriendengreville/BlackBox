@@ -1,4 +1,5 @@
 import java.io.*;
+import java.math.BigInteger;
 import java.net.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -16,11 +17,15 @@ public class Server {
 	// to display time
 	private SimpleDateFormat sdf;
 	// the port number to listen for connection
-	private static int port;
+	private static int port = 6969;
 	private String password;
 	// the boolean that will be turned of to stop the server
 	private boolean keepGoing;
 	
+	Cryptage serverKeys;	//paire de clés du serveur qui sera transmise aux clients
+	Cryptage clientKeys;
+	boolean  clientCommonKeyGiven = false;
+	boolean  clientPublicKeyGiven = false;
 
 	/*
 	 *  server constructor that receive the port to listen to for connection as parameter
@@ -43,6 +48,9 @@ public class Server {
 	
 	public void start() {
 		keepGoing = true;
+		serverKeys = new Cryptage();		//démarrage du module de cryptage
+		serverKeys.computeRSA_Key();		//création des clés privées et publiques du serveur qui seront transmises aux clients
+		
 		/* create socket server and wait for connection requests */
 		try 
 		{
@@ -52,7 +60,7 @@ public class Server {
 			while(keepGoing) 
 			{
 				// format message saying we are waiting
-				display("Server waiting for Clients on port " + 6969 + ".");
+				display("Server waiting for Clients on port " + port + ".");
 				Socket socket = serverSocket.accept();  	// accept connection
 				
 				// if I was asked to stop
@@ -108,33 +116,61 @@ public class Server {
 		String time = sdf.format(new Date()) + " " + msg;
 		if(sg == null)
 			System.out.println(time);
-		else
-			sg.appendEvent(time + "\n");
+//		else
+//			sg.appendEvent(time + "\n");
 	}
 	/*
 	 *  to broadcast a message to all Clients
 	 */
-	private synchronized void broadcast(String message) {
+	private synchronized void broadcast(ChatMessage message) {
 		// add HH:mm:ss and \n to the message
-		String time = sdf.format(new Date());
-		String messageLf = time + " " + message + "\n";
+//		String time = sdf.format(new Date());
+//		String messageLf = /*time + " " + */message /*+ "\n"*/;
+//		ChatMessage messageFinal = new ChatMessage(ChatMessage.MESSAGE, messageLf);
+		message.setTimeStamp(sdf.format(new Date()));
 		// display message on console or GUI
-		if(sg == null)
-			System.out.print(messageLf);
-		else
-			sg.appendRoom(messageLf);     // append in the room window
+	
+		sg.appendRoom(message.getTimeStamp() + " " + message.getSender() +
+				" : " + message.getMessage() + "\n");     // append in the room window
 		
 		// we loop in reverse order in case we would have to remove a Client
 		// because it has disconnected
 		for(int i = al.size(); --i >= 0;) {
 			ClientThread ct = al.get(i);
 			// try to write to the Client if it fails remove it from the list
-			if(!ct.writeMsg(messageLf)) {
+			if(!ct.writeMsg(message)) {
 				al.remove(i);
 				display("Disconnected Client " + ct.username + " removed from list.");
 			}
 		}
-	}
+	}//broadcast
+	
+	private synchronized void sendTo(String user, ChatMessage message) {
+		// add HH:mm:ss and \n to the message
+		String time = sdf.format(new Date());
+//		String messageLf = /*time + " " + */message /*+ "\n"*/;
+//		ChatMessage messageFinal = new ChatMessage(type, messageLf);
+		message.setTimeStamp(time);
+		message.setDest(user);
+		
+		if (message.getSender().equals("null"))
+			message.setSender("Serveur");
+		
+		sg.appendRoom(message.getTimeStamp() + " " + message.getSender() +
+				" --> " + message.getDest() + " :  " + message.getMessage() + "\n");     // append in the room window
+		
+		// we loop in reverse order in case we would have to remove a Client
+		// because it has disconnected
+		for(int i = al.size(); --i >= 0;) {
+			ClientThread ct = al.get(i);
+	
+			if(ct.username.equals(user) && !ct.writeMsg(message)) {	//on envoit un message qu'au client dont le nom correspond
+				al.remove(i);
+				display("Disconnected Client " + ct.username + " removed from list.");
+				break;
+			}
+		}
+	}//sendTo
 
 	// for a client who logoff using the LOGOUT message
 	synchronized void remove(int id) {
@@ -159,7 +195,7 @@ public class Server {
 		// start server on port 1500 unless a PortNumber is specified 
 		int portNumber = 6969;
 		// create a server object and start it
-		Server server = new Server(6969);
+		Server server = new Server(portNumber);
 		server.start();
 	}
 
@@ -183,6 +219,7 @@ public class Server {
 			// a unique id
 			id = ++uniqueId;
 			this.socket = socket;
+			clientKeys = new Cryptage();
 			/* Creating both Data Stream */
 			System.out.println("Thread trying to create Object Input/Output Streams");
 			try
@@ -198,7 +235,7 @@ public class Server {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				if(!cm.getMessage().equals(sg.getPassword())) {
+				if(!cm.getMessage().equals(sg.getPassword())) {					//vérification du mot de passe
 					display(username + "Mot de passe incorrect petit con !");
 					remove(id);
 					close();
@@ -239,13 +276,20 @@ public class Server {
 				switch(cm.getType()) {
 
 				case ChatMessage.MESSAGE:
-					broadcast(username + ": " + message);
+					broadcast(cm);
 					break;
 				case ChatMessage.LOGOUT:
 					display(username + " disconnected with a LOGOUT message.");
 					keepGoing = false;
 					break;
+				case ChatMessage.KEYCommon:
+					sendKey(ChatMessage.KEYCommon, message);
+					break;
+				case ChatMessage.KEYPublic:
+					sendKey(ChatMessage.KEYPublic, message);
+					break;
 				}
+				
 			}
 			// remove myself from the arrayList containing the list of the
 			// connected Clients
@@ -273,7 +317,7 @@ public class Server {
 		/*
 		 * Write a String to the Client output stream
 		 */
-		private boolean writeMsg(String msg) {
+		private boolean writeMsg(ChatMessage msg) {
 			// if Client is still connected send the message to it
 			if(!socket.isConnected()) {
 				close();
@@ -289,6 +333,25 @@ public class Server {
 				display(e.toString());
 			}
 			return true;
+		}
+		
+		private void sendKey(int type, String key){
+			if (type == ChatMessage.KEYCommon){
+				clientKeys.setCommonKey(new BigInteger(key));
+				clientCommonKeyGiven = true;
+			}
+			else if (type == ChatMessage.KEYPublic){
+				clientKeys.setPublicKey(new BigInteger(key));
+				clientPublicKeyGiven = true;
+			}
+			
+			if (clientCommonKeyGiven && clientPublicKeyGiven){
+				sendTo(this.username, new ChatMessage(ChatMessage.KEYCommon, clientKeys.encrypt(serverKeys.getCommonKey()).toString()));
+				sendTo(this.username, new ChatMessage(ChatMessage.KEYPublic, clientKeys.encrypt(serverKeys.getPublicKey()).toString()));
+				sendTo(this.username, new ChatMessage(ChatMessage.KEYPrivate, clientKeys.encrypt(serverKeys.getPrivateKey()).toString()));
+				clientCommonKeyGiven = false;
+				clientPublicKeyGiven = false;
+			}
 		}
 	}
 }

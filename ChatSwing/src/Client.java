@@ -1,4 +1,5 @@
 
+import java.math.BigInteger;
 import java.net.*;
 import java.io.*;
 import java.util.*;
@@ -19,6 +20,9 @@ public class Client  {
 	// the server, the port and the username
 	private String server, username;
 	private int port;
+	
+	Cryptage clientKeys;	//module de cryptage/décryptage côté client
+	Cryptage serverKeys;	//module de cryptage/décryptage des messages du/au serveur
 
 	/*
 	 *  Constructor called by console mode
@@ -41,6 +45,11 @@ public class Client  {
 		this.username = username;
 		// save if we are in GUI mode or not
 		this.cg = cg;
+		
+		clientKeys = new Cryptage();	//démarage du module de cryptage client
+		clientKeys.computeRSA_Key();	//génère les clés de cryptage du client
+		
+		serverKeys = new Cryptage();	//démarrage du module de cryptage serveur
 	}
 	
 	/*
@@ -88,7 +97,10 @@ public class Client  {
 			return false;
 		}
 		// success we inform the caller that it worked
-		this.sendMessage(new ChatMessage(ChatMessage.PASSWORD, cg.getPassword()));
+		this.sendInit(new ChatMessage(ChatMessage.PASSWORD, cg.getPassword()));
+		this.sendInit(new ChatMessage(ChatMessage.KEYCommon, clientKeys.getCommonKey()));
+		System.out.println("clé envoyée");
+		this.sendInit(new ChatMessage(ChatMessage.KEYPublic, clientKeys.getPublicKey()));
 		return true;
 	}
 
@@ -96,17 +108,25 @@ public class Client  {
 	 * To send a message to the console or the GUI
 	 */
 	private void display(String msg) {
-		if(cg == null)
-			System.out.println(msg);      // println in console mode
-		else
-			cg.append(msg + "\n");		// append to the ClientGUI JTextArea (or whatever)
+		cg.append(msg + "\n");		// append to the ClientGUI JTextArea (or whatever)
 	}
 	
 	/*
 	 * To send a message to the server
 	 */
+	void sendInit(ChatMessage msg){
+		try {
+			sOutput.writeObject(msg);
+		}
+		catch(IOException e) {
+			display("Exception writing to server: " + e);
+		}
+	}
+	
 	void sendMessage(ChatMessage msg) {
 		try {
+			msg.setMessage(serverKeys.encrypt(msg.getMessage()).toString());
+			msg.setSender(username);
 			sOutput.writeObject(msg);
 		}
 		catch(IOException e) {
@@ -157,7 +177,7 @@ public class Client  {
 	 */
 	public static void main(String[] args) {
 		// default values
-		int portNumber = 1500;
+		int portNumber = 6969;
 		String serverAddress = "localhost";
 		String userName = "Anonymous";
 
@@ -222,18 +242,30 @@ public class Client  {
 	 */
 	class ListenFromServer extends Thread {
 
+		private ChatMessage msgIN;
+		
 		public void run() {
 			while(true) {
 				try {
-					String msg = (String) sInput.readObject();
-					System.out.print(msg);
-					// if console mode print the message and add back the prompt
-					if(cg == null) {
-						System.out.println(msg);
-						System.out.print("> ");
+					msgIN = (ChatMessage) sInput.readObject();
+//					String msg = (String) sInput.readObject();
+					System.out.print(msgIN);
+//					String heure = "";
+					
+//					heure = msgIN.getMessage().substring(0, 8);		//extraction de l'heure du message
+
+//					msgIN.setMessage((String) msgIN.getMessage().subSequence(9, msgIN.getMessage().length() - 1));
+
+					if (msgIN.getType() == ChatMessage.MESSAGE){
+						display(msgIN.getTimeStamp() + " " + msgIN.getSender() + " : " + serverKeys.decrypt(serverKeys.convert(msgIN.getMessage())));
 					}
-					else {
-						cg.append(msg);
+					else if (msgIN.getType() == ChatMessage.KEYCommon) {
+						serverKeys.setCommonKey(new BigInteger(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage()))));		//on récupère la clé envoyée, que l'on convertit en vector, que l'on décrypte, que l'on met dans le set de clés
+					}else if (msgIN.getType() == ChatMessage.KEYPublic) {
+						serverKeys.setPublicKey(new BigInteger(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage()))));
+					}else if (msgIN.getType() == ChatMessage.KEYPrivate) {
+						serverKeys.setPrivateKey(new BigInteger(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage()))));
+						display(serverKeys.getPrivateKey());
 					}
 				}
 				catch(IOException e) {
