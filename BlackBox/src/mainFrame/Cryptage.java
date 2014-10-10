@@ -211,8 +211,14 @@ public class Cryptage {
 			tmp.deleteCharAt(0);
 			tmp.deleteCharAt(tmp.length()-1);
 			toConvert = tmp.toString();
+			
 			System.out.println(toConvert);
+			
+			String tmpStr = "";
 			for(int i = 0; i < toConvert.length(); i++){
+				for (int j = 0; j < toConvert.length(); ++j){
+					
+				}
 				
 			}
 //			toConvert.split("\\,");
@@ -239,7 +245,7 @@ public class Cryptage {
 	public static void main(String[] args) {
 		Cryptage test = new Cryptage();
         test.computeRSA_Key();
-		String messageTest = "Bonjour je parle avec des accents et tout tà";
+		String messageTest = "Bonjour je parle avec des accents et tout";
 		
 		test.cypherTab = test.encrypt(messageTest);
 		
