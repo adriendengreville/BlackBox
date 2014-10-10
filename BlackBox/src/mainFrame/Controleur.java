@@ -72,13 +72,10 @@ public class Controleur {
 	    	String tmp = new String(chatBox.getText());
 	    	tmp += userField.getText() + " : ";
 	    	tmp += messageBox.getText() + "\n";
-	    	
 	    	chatBox.setText(tmp);
-	    	
-	    	messageBox.setText("");
 	    	// just have to send the message
-	    	client.sendMessage(new ChatMessage(ChatMessage.MESSAGE, chatBox.getText()));				
-
+	    	client.sendMessage(new ChatMessage(ChatMessage.MESSAGE, messageBox.getText()));
+	    	messageBox.setText("");
 	    }//sentClicked
 	    
 	    @FXML
@@ -135,8 +132,6 @@ public class Controleur {
 					server = new Server(6969);
 					// and start it as a thread
 					new ServerRunning().start();
-			    	server = new Server(6969, null);
-			    	server.start();
 		        }
 				});
 	    	
@@ -169,7 +164,6 @@ public class Controleur {
 	
 	        //userLabel.setText("JK DE LA MONTAGNE");
 	    }
-	    
 		void appendEvent(String str) {
 			logs.appendText(str);
 			logs.positionCaret(chatBox.getText().length() - 1);

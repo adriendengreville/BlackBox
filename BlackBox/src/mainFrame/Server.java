@@ -14,6 +14,8 @@ import java.net.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import javafx.application.Platform;
+
 /*
  * The server that can be run both as a console application or a GUI
  */
@@ -131,11 +133,8 @@ public class Server {
 		String time = sdf.format(new Date());
 		String messageLf = time + " " + message + "\n";
 		// display message on console or GUI
-		/*if(sg == null)
-			System.out.print(messageLf);
-		else
-			sg.appendRoom(messageLf);     // append in the room window
-		*/
+		System.out.print(messageLf + "\n");
+		sg.append(messageLf);     // append in the room window
 		// we loop in reverse order in case we would have to remove a Client
 		// because it has disconnected
 		for(int i = al.size(); --i >= 0;) {
@@ -252,26 +251,9 @@ public class Server {
 				}
 				// the messaage part of the ChatMessage
 				String message = cm.getMessage();
-
+				System.out.print(message);
 				// Switch on the type of message receive
-				switch(cm.getType()) {
-
-				case ChatMessage.MESSAGE:
 					broadcast(username + ": " + message);
-					break;
-				case ChatMessage.LOGOUT:
-					display(username + " disconnected with a LOGOUT message.");
-					keepGoing = false;
-					break;
-				case ChatMessage.WHOISIN:
-					writeMsg("List of the users connected at " + sdf.format(new Date()) + "\n");
-					// scan al the users connected
-					for(int i = 0; i < al.size(); ++i) {
-						ClientThread ct = al.get(i);
-						writeMsg((i+1) + ") " + ct.username + " since " + ct.date);
-					}
-					break;
-				}
 			}
 			// remove myself from the arrayList containing the list of the
 			// connected Clients
