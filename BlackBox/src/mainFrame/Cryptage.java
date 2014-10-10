@@ -205,9 +205,19 @@ public class Cryptage {
 		    return toEdit;
 		}
 		
-		public void convert (){
+		public void convert (String toConvert){
+			Vector<BigInteger> receivedData = new Vector<BigInteger>();
+			StringBuilder tmp = new StringBuilder(toConvert);
+			tmp.deleteCharAt(0);
+			tmp.deleteCharAt(tmp.length()-1);
+			toConvert = tmp.toString();
+			System.out.println(toConvert);
+			for(int i = 0; i < toConvert.length(); i++){
+				
+			}
+//			toConvert.split("\\,");
 			
-		}//convert(Vector<BigInteger>)
+		}//convert(String)
 		
 	//SET-GETTER
 		public void setPrivateKey(BigInteger privateKey) {
@@ -227,15 +237,16 @@ public class Cryptage {
 		}
 		
 	public static void main(String[] args) {
-        Cryptage test = new Cryptage();
+		Cryptage test = new Cryptage();
         test.computeRSA_Key();
 		String messageTest = "Bonjour je parle avec des accents et tout tà";
 		
 		test.cypherTab = test.encrypt(messageTest);
 		
-        System.out.print(test.cypherTab.toString());
+//        System.out.print(test.cypherTab.toString());
         
         String transfert = test.cypherTab.toString();
+        test.convert(transfert);
 //        Vector<BigInteger> transfertSuite = transfert;
         
         test.plainPhrase = test.decrypt(test.cypherTab);
