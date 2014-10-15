@@ -14,7 +14,7 @@ public class ChatMessage implements Serializable {
 	// MESSAGE an ordinary message
 	// LOGOUT to disconnect from the Server
 	// KEYS pour l'échange de clés
-	static final int PASSWORD = 0, MESSAGE = 1, LOGOUT = 2, KEYCommon = 3, KEYPublic = 4, KEYPrivate = 5;
+	static final int PASSWORD = 0, MESSAGE = 1, LOGOUT = 2, KEYCommon = 3, KEYPublic = 4, KEYPrivate = 5, ConnectERR = 6, ConnectOK = 7;
 	private int type;
 	private String message;
 	private String dest;

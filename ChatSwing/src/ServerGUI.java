@@ -24,13 +24,15 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
 		// in the NorthPanel the PortNumber the Start and Stop buttons
 		JPanel north = new JPanel();
 		north.add(new JLabel("Password: "));
-		password = new JPasswordField(" " + password);
+		password = new JPasswordField("a");
+		password.setPreferredSize(new Dimension(120, 20));
+		password.setSize(new Dimension(20, 0));
 		north.add(password);
 		// to stop or start the server, we start with "Start"
 		stopStart = new JButton("Start");
 		stopStart.addActionListener(this);
 		north.add(stopStart);
-		add(north, BorderLayout.NORTH);
+		getContentPane().add(north, BorderLayout.NORTH);
 		
 		// the event and chat room
 		JPanel center = new JPanel(new GridLayout(2,1));
@@ -42,7 +44,7 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
 		event.setEditable(false);
 		appendEvent("Events log.\n");
 		center.add(new JScrollPane(event));	
-		add(center);
+		getContentPane().add(center);
 		
 		// need to be informed when the user click the close button on the frame
 		addWindowListener(this);
@@ -59,9 +61,10 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
 		chat.append(str);
 		chat.setCaretPosition(chat.getText().length() - 1);
 	}
+	
 	void appendEvent(String str) {
 		event.append(str);
-		event.setCaretPosition(chat.getText().length() - 1);
+		event.setCaretPosition(event.getText().length() - 1);
 		
 	}
 	
@@ -76,7 +79,7 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
 			return;
 		}
       	// OK start the server	
-		int port = 6969;
+		int port = 1664;
 		// ceate a new Server
 		server = new Server(port, this);
 		// and start it as a thread

@@ -98,7 +98,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 				if(server.length() == 0)
 					return;
 				// empty or invalid port numer, ignore it
-				String portNumber = "6969";
+				String portNumber = "1664";
 				if(portNumber.length() == 0)
 					return;
 				int port = 0;

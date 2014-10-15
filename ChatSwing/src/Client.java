@@ -4,72 +4,45 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 
-/*
- * The Client that can be run both as a console or a GUI
- */
+import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
+
 public class Client  {
 
-	// for I/O
-	private ObjectInputStream sInput;		// to read from the socket
-	private ObjectOutputStream sOutput;		// to write on the socket
+	private ObjectInputStream sInput;		
+	private ObjectOutputStream sOutput;		
 	private Socket socket;
 
-	// if I use a GUI or not
-	private ClientGUI cg;
+	private ClientGUI clientUI;
 	
-	// the server, the port and the username
 	private String server, username;
 	private int port;
 	
 	Cryptage clientKeys;	//module de cryptage/décryptage côté client
 	Cryptage serverKeys;	//module de cryptage/décryptage des messages du/au serveur
 
-	/*
-	 *  Constructor called by console mode
-	 *  server: the server address
-	 *  port: the port number
-	 *  username: the username
-	 */
-	Client(String server, int port, String username) {
-		// which calls the common constructor with the GUI set to null
-		this(server, port, username, null);
-	}
-
-	/*
-	 * Constructor call when used from a GUI
-	 * in console mode the ClienGUI parameter is null
-	 */
-	Client(String server, int port, String username, ClientGUI cg) {
+	
+	Client(String server, int port, String username, ClientGUI clientUI) {
 		this.server = server;
 		this.port = port;
 		this.username = username;
-		// save if we are in GUI mode or not
-		this.cg = cg;
+
+		this.clientUI = clientUI;
 		
 		clientKeys = new Cryptage();	//démarage du module de cryptage client
 		clientKeys.computeRSA_Key();	//génère les clés de cryptage du client
 		
 		serverKeys = new Cryptage();	//démarrage du module de cryptage serveur
-	}
+	}//ClientCSTR
 	
-	/*
-	 * To start the dialog
-	 */
-	public boolean start() {
-		// try to connect to the server
+	
+	public boolean start() {	//Connexion au serveur
 		try {
-			socket = new Socket(server, port);
+			socket = new Socket(server, port);		//on se connecte
 		} 
-		// if it failed not much I can so
-		catch(Exception ec) {
-			display("Error connectiong to server:" + ec);
+		catch(Exception e) {
+			display("Erreur lors de la connexion au serveur: " + e);
 			return false;
-		}
-		// message PASSWORD
-		
-		
-		String msg = "Connection accepted " + socket.getInetAddress() + ":" + socket.getPort();
-		display(msg);
+		}		
 	
 		/* Creating both Data Stream */
 		try
@@ -92,23 +65,43 @@ public class Client  {
 			sOutput.writeObject(username);
 		}
 		catch (IOException eIO) {
-			display("Exception doing login : " + eIO);
+			display("Erreur lors de la l'envoi du pseudo : " + eIO);
 			disconnect();
 			return false;
 		}
-		// success we inform the caller that it worked
-		this.sendInit(new ChatMessage(ChatMessage.PASSWORD, cg.getPassword()));
+
+		display("Soumission du mot de passe au serveur.");
+		
+		this.sendInit(new ChatMessage(ChatMessage.PASSWORD, clientUI.getPassword()));
+		
+//		ChatMessage reponse = null;
+//
+//		reponse = (ChatMessage) sInput.readObject();
+//
+//		if(reponse.getType() == ChatMessage.ConnectERR){										//on vérifie si le mot de passe est bon
+//			display("La connexion a été refusée par le serveur car le mot de passe est incorrect.");
+//			disconnect();
+//			return false;
+//		}else if (reponse.getType() == ChatMessage.ConnectOK){
+//			display("Le mot de passe a été accepté par le serveur.");
+//		}
+
+		
+			
 		this.sendInit(new ChatMessage(ChatMessage.KEYCommon, clientKeys.getCommonKey()));
 		System.out.println("clé envoyée");
 		this.sendInit(new ChatMessage(ChatMessage.KEYPublic, clientKeys.getPublicKey()));
-		return true;
+		
+		display("Connexion acceptée par le serveur " + socket.getInetAddress() + ":" + socket.getPort() + ".");
+		
+		return true;		
 	}
 
 	/*
 	 * To send a message to the console or the GUI
 	 */
 	private void display(String msg) {
-		cg.append(msg + "\n");		// append to the ClientGUI JTextArea (or whatever)
+		clientUI.append(msg + "\n");		// append to the ClientGUI JTextArea (or whatever)
 	}
 	
 	/*
@@ -153,89 +146,11 @@ public class Client  {
 		catch(Exception e) {} // not much else I can do
 		
 		// inform the GUI
-		if(cg != null)
-			cg.connectionFailed();
+		if(clientUI != null)
+			clientUI.connectionFailed();
 			
 	}
-	/*
-	 * To start the Client in console mode use one of the following command
-	 * > java Client
-	 * > java Client username
-	 * > java Client username portNumber
-	 * > java Client username portNumber serverAddress
-	 * at the console prompt
-	 * If the portNumber is not specified 1500 is used
-	 * If the serverAddress is not specified "localHost" is used
-	 * If the username is not specified "Anonymous" is used
-	 * > java Client 
-	 * is equivalent to
-	 * > java Client Anonymous 1500 localhost 
-	 * are eqquivalent
-	 * 
-	 * In console mode, if an error occurs the program simply stops
-	 * when a GUI id used, the GUI is informed of the disconnection
-	 */
-	public static void main(String[] args) {
-		// default values
-		int portNumber = 6969;
-		String serverAddress = "localhost";
-		String userName = "Anonymous";
-
-		// depending of the number of arguments provided we fall through
-		switch(args.length) {
-			// > javac Client username portNumber serverAddr
-			case 3:
-				serverAddress = args[2];
-			// > javac Client username portNumber
-			case 2:
-				try {
-					portNumber = Integer.parseInt(args[1]);
-				}
-				catch(Exception e) {
-					System.out.println("Invalid port number.");
-					System.out.println("Usage is: > java Client [username] [portNumber] [serverAddress]");
-					return;
-				}
-			// > javac Client username
-			case 1: 
-				userName = args[0];
-			// > java Client
-			case 0:
-				break;
-			// invalid number of arguments
-			default:
-				System.out.println("Usage is: > java Client [username] [portNumber] {serverAddress]");
-			return;
-		}
-		// create the Client object
-		Client client = new Client(serverAddress, portNumber, userName);
-		// test if we can start the connection to the Server
-		// if it failed nothing we can do
-		if(!client.start())
-			return;
-		
-		// wait for messages from user
-		Scanner scan = new Scanner(System.in);
-		// loop forever for message from the user
-		while(true) {
-			System.out.print("> ");
-			// read message from user
-			String msg = scan.nextLine();
-			// logout if message is LOGOUT
-			if(msg.equalsIgnoreCase("LOGOUT")) {
-				client.sendMessage(new ChatMessage(ChatMessage.LOGOUT, ""));
-				// break to do the disconnect
-				break;
-			}
-							
-			else {				// default to ordinary message
-				client.sendMessage(new ChatMessage(ChatMessage.MESSAGE, msg));
-			}
-		}
-		// done disconnect
-		client.disconnect();	
-	}
-
+	
 	/*
 	 * a class that waits for the message from the server and append them to the JTextArea
 	 * if we have a GUI or simply System.out.println() it in console mode
@@ -248,18 +163,10 @@ public class Client  {
 			while(true) {
 				try {
 					msgIN = (ChatMessage) sInput.readObject();
-//					String msg = (String) sInput.readObject();
-					System.out.print(msgIN);
-//					String heure = "";
 					
-//					heure = msgIN.getMessage().substring(0, 8);		//extraction de l'heure du message
-
-//					msgIN.setMessage((String) msgIN.getMessage().subSequence(9, msgIN.getMessage().length() - 1));
-
 					if (msgIN.getType() == ChatMessage.MESSAGE){
 						display(msgIN.getTimeStamp() + " " + msgIN.getSender() + " : " + serverKeys.decrypt(serverKeys.convert(msgIN.getMessage())));
-					}
-					else if (msgIN.getType() == ChatMessage.KEYCommon) {
+					}else if (msgIN.getType() == ChatMessage.KEYCommon) {
 						serverKeys.setCommonKey(new BigInteger(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage()))));		//on récupère la clé envoyée, que l'on convertit en vector, que l'on décrypte, que l'on met dans le set de clés
 					}else if (msgIN.getType() == ChatMessage.KEYPublic) {
 						serverKeys.setPublicKey(new BigInteger(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage()))));
@@ -267,11 +174,10 @@ public class Client  {
 						serverKeys.setPrivateKey(new BigInteger(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage()))));
 						display(serverKeys.getPrivateKey());
 					}
-				}
-				catch(IOException e) {
-					display("Erreur connexion refusÃ©e");
-					if(cg != null) 
-						cg.connectionFailed();
+				} catch(IOException e) {
+					display("Erreur connexion refusée");
+					if(clientUI != null) 
+						clientUI.connectionFailed();
 					break;
 				}
 				// can't happen with a String object but need the catch anyhow
