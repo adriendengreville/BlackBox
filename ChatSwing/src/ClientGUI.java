@@ -91,8 +91,10 @@ public class ClientGUI extends JFrame implements ActionListener {
 				// ok it is a connection request
 				String username = txtF.getText().trim();
 				// empty username ignore it
-				if(username.length() == 0)
+				if(username.length() == 0 || username.contains(" ")){
+					append("Nom d'utilisateur nul ou contenant un espace");
 					return;
+				}
 				// empty serverAddress ignore it
 				String server = ipField.getText().trim();
 				if(server.length() == 0)
@@ -125,18 +127,13 @@ public class ClientGUI extends JFrame implements ActionListener {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.getContentPane().setBackground(Color.BLACK);
+		frame.getContentPane().setBackground(Color.decode("#1d1d1d"));
 		frame.getContentPane().setLayout(null);
 		
 		messageBox = new JTextArea();
 		messageBox.setBackground(UIManager.getColor("ComboBox.background"));
 		messageBox.setBounds(10, 444, 645, 58);
 		frame.getContentPane().add(messageBox);
-		
-		chatBox = new JTextArea();
-		chatBox.setBackground(UIManager.getColor("ComboBox.background"));
-		chatBox.setBounds(10, 165, 784, 267);
-		frame.getContentPane().add(chatBox);
 		
 		sendButton = new JButton("Envoyer");
 		sendButton.addActionListener(new ActionListener() {
@@ -146,16 +143,16 @@ public class ClientGUI extends JFrame implements ActionListener {
 		sendButton.setBounds(667, 444, 127, 58);
 		frame.getContentPane().add(sendButton);
 		
-		quitNetwork = new JButton("Quitter le réseau");
+		quitNetwork = new JButton("Quitter le r\u00E9seau");
 		quitNetwork.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			}
 		});
-		quitNetwork.setBounds(639, 124, 151, 35);
+		quitNetwork.setBounds(633, 124, 151, 35);
 		frame.getContentPane().add(quitNetwork);
 		
-		joinNetwork = new JButton("Rejoindre un réseau");
-		joinNetwork.setBounds(482, 124, 151, 35);
+		joinNetwork = new JButton("Rejoindre un r\u00E9seau");
+		joinNetwork.setBounds(472, 124, 151, 35);
 		frame.getContentPane().add(joinNetwork);
 		
 		passwordField = new JPasswordField(10);
@@ -181,13 +178,27 @@ public class ClientGUI extends JFrame implements ActionListener {
 		
 		JLabel lblBlackboxProject = new JLabel("Blackbox Project");
 		lblBlackboxProject.setFont(new Font("Lucida Grande", Font.PLAIN, 30));
-		lblBlackboxProject.setForeground(UIManager.getColor("CheckBoxMenuItem.selectionForeground"));
-		lblBlackboxProject.setBounds(245, 6, 256, 50);
+		lblBlackboxProject.setForeground(Color.WHITE);
+		lblBlackboxProject.setBounds(292, 26, 256, 50);
 		frame.getContentPane().add(lblBlackboxProject);
+		
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(10, 169, 774, 264);
+		frame.getContentPane().add(scrollPane);
+		
+		chatBox = new JTextArea();
+		chatBox.setCaretPosition(chatBox.getText().length());
+		chatBox.setDisabledTextColor(Color.BLACK);
+		chatBox.setSelectionColor(Color.BLACK);
+		chatBox.setSelectedTextColor(Color.BLACK);
+		chatBox.setEnabled(false);
+		chatBox.setEditable(false);
+		chatBox.setFocusable(false);
+		scrollPane.setViewportView(chatBox);
+		chatBox.setBackground(UIManager.getColor("ComboBox.background"));
 		frame.setResizable(false);
 		frame.setBounds(100, 100, 800, 530);
 		frame.setBackground(UIManager.getColor("FormattedTextField.inactiveForeground"));
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
-
 }

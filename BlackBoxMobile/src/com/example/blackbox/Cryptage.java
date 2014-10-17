@@ -1,11 +1,10 @@
+package com.example.blackbox;
 /*
- * Description : Cette classe est l'implémentation de tout ce qui concerne le codage des informations.
+ * Description : Cette classe est l'implï¿½mentation de tout ce qui concerne le codage des informations.
  */
 
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
 import java.util.Vector;
 
 public class Cryptage {
@@ -20,43 +19,43 @@ public class Cryptage {
 //		private Vector<BigInteger> 	cypherTab;
 //		private String 				plainPhrase; 
 	
-	//MÉTHODES
+	//Mï¿½THODES
 		
 		public Cryptage(){
-			genererPremier(); 	//on etablit la liste des nombres premiers (À REMPLACER PAR UNE LECTURE DE FICHIER POUR GAIN DE TEMPS)
+			genererPremier(); 	//on etablit la liste des nombres premiers (ï¿½ REMPLACER PAR UNE LECTURE DE FICHIER POUR GAIN DE TEMPS)
 		}//cryptageCSTR
 		
-		private BigInteger encrypt(char carac) {							//permet d'encoder un char en big integer avec les clés
+		private BigInteger encrypt(char carac) {							//permet d'encoder un char en big integer avec les clï¿½s
 			String 	   caracSTR = "" + carac; 										//on stock le char dans une string 
-			BigInteger bigByte 	= new BigInteger(ajoutByte(caracSTR.getBytes()));	//on stocke la string générée dans un BigInteger (on en profite pour ajouter un byte valant 1 au début pour ne pas fuck up les caractères spéciaux)
-			bigByte 			= bigByte.modPow(publicKey, commonKey); 			//on code le big integer avec les clés publiques et communes
+			BigInteger bigByte 	= new BigInteger(ajoutByte(caracSTR.getBytes()));	//on stocke la string gï¿½nï¿½rï¿½e dans un BigInteger (on en profite pour ajouter un byte valant 1 au dï¿½but pour ne pas fuck up les caractï¿½res spï¿½ciaux)
+			bigByte 			= bigByte.modPow(publicKey, commonKey); 			//on code le big integer avec les clï¿½s publiques et communes
 			
 			return bigByte;
 		}//encrypt(char)
 		
-		public Vector<BigInteger> encrypt (String plainPhrase){			//permet le traitement d'une String pour l'encoder den un table de big Int (met 3ms en moyenne à encoder une phrase)
+		public Vector<BigInteger> encrypt (String plainPhrase){			//permet le traitement d'une String pour l'encoder den un table de big Int (met 3ms en moyenne ï¿½ encoder une phrase)
 			Vector<BigInteger> cypherMessage = new Vector<BigInteger>();			
 			
 			for (int i = 0; i < plainPhrase.length(); i++)							//pour chaque caractere de la chaine
-				cypherMessage.add(this.encrypt(plainPhrase.charAt(i)));				//on encode encode via la méthode encrypt(char) et on stocke
+				cypherMessage.add(this.encrypt(plainPhrase.charAt(i)));				//on encode encode via la mï¿½thode encrypt(char) et on stocke
 	
-			return cypherMessage;													//et on retourne ce magnifique vector plein de lettres encodées
+			return cypherMessage;													//et on retourne ce magnifique vector plein de lettres encodï¿½es
 		}//encrypt(String)
 	
-		private String decrypt(BigInteger messageCode) {				//permet de décoder les BigInteger avec les clés
-			messageCode = messageCode.modPow(privateKey, commonKey);				//on decode le big integer avec les clés privées et communes
-			messageCode = new BigInteger(removeByte(messageCode.toByteArray()));	//on retire le byte ajouté au début lors de l'encryption
+		private String decrypt(BigInteger messageCode) {				//permet de dï¿½coder les BigInteger avec les clï¿½s
+			messageCode = messageCode.modPow(privateKey, commonKey);				//on decode le big integer avec les clï¿½s privï¿½es et communes
+			messageCode = new BigInteger(removeByte(messageCode.toByteArray()));	//on retire le byte ajoutï¿½ au dï¿½but lors de l'encryption
 
 			return new String(messageCode.toByteArray());						
 		}//decrypt(BigInteger)
 		
-		public String decrypt(Vector<BigInteger> cypherTab){		//permet le traitement d'un Vector de BigInteger pour le décoder (met 1ms en moyenne à décoder une phrase)
+		public String decrypt(Vector<BigInteger> cypherTab){		//permet le traitement d'un Vector de BigInteger pour le dï¿½coder (met 1ms en moyenne ï¿½ dï¿½coder une phrase)
 			String plainPhrase = "";
 			
-			for(int i = 0; i < cypherTab.size(); i++)								//pour chaque élément du tableau
-				plainPhrase += decrypt(cypherTab.elementAt(i));						//on décode et on range dans la String
+			for(int i = 0; i < cypherTab.size(); i++)								//pour chaque ï¿½lï¿½ment du tableau
+				plainPhrase += decrypt(cypherTab.elementAt(i));						//on dï¿½code et on range dans la String
 			
-			return plainPhrase;														//et on retourne la phrase fraichement décodée
+			return plainPhrase;														//et on retourne la phrase fraichement dï¿½codï¿½e
 		}//decrypt(Vector<BigInteger)
 	
 		public void computeRSA_Key() {
@@ -71,19 +70,19 @@ public class Cryptage {
 			
 			int posInTable = 0;
 			
-			//déplacement de la création de la liste dans le constructeur
+			//dï¿½placement de la crï¿½ation de la liste dans le constructeur
 			
-			posInTable = (int) (Math.random() * tablePr.size());									//on choisi aléatoirement un indice dans la liste (ou tout nombre est > à 1 000 000)
+			posInTable = (int) (Math.random() * tablePr.size());									//on choisi alï¿½atoirement un indice dans la liste (ou tout nombre est > ï¿½ 1 000 000)
 
-			//plus besoin des Integer intermédiaires
+			//plus besoin des Integer intermï¿½diaires
 			
 			p = new BigInteger(/*p1.toString()*/ tablePr.get(posInTable).toString());				//pour placer le nombre correspondant dans p
 			
-			posInTable = posInTable + (int) (Math.random() * (tablePr.size()- posInTable - 10)); 	//on choisi un nouvel indice forcement supérieur au précédent
+			posInTable = posInTable + (int) (Math.random() * (tablePr.size()- posInTable - 10)); 	//on choisi un nouvel indice forcement supï¿½rieur au prï¿½cï¿½dent
 			q = new BigInteger(tablePr.get(posInTable).toString());									//on place le nombre correspondant dans q
 			
 			n 	= p.multiply(q);																	//n   = p * q
-			phi = (p.subtract(BigInteger.ONE)).multiply((q.subtract(BigInteger.ONE)));	//phi = (p-1) * (q-1)
+			phi = (p.subtract(new BigInteger("1"))).multiply((q.subtract(new BigInteger("1"))));	//phi = (p-1) * (q-1)
 			
 //			if (PGCD(p, q) == 1){
 //				System.out.println(p + " et " + q + " sont premiers entre eux.");
@@ -95,11 +94,11 @@ public class Cryptage {
 //					"phi = " + phi + "\n"
 					);
 			
-			posInTable = posInTable + (int) (Math.random() * (tablePr.size() - posInTable));		//on choisit un autre indice dans la table pour avoir un autre nombre premier (donc forcément premier avec phi)
-			d = new BigInteger(tablePr.get(posInTable).toString());									//d fait parti du couple de clé privée
+			posInTable = posInTable + (int) (Math.random() * (tablePr.size() - posInTable));		//on choisit un autre indice dans la table pour avoir un autre nombre premier (donc forcï¿½ment premier avec phi)
+			d = new BigInteger(tablePr.get(posInTable).toString());									//d fait parti du couple de clï¿½ privï¿½e
 			System.out.println("d = " + d);
 						
-			e = /*d.modInverse(phi)*/ modInv(d, phi);										//e fait parti du couple de clés publique et vaut d^-1 mod phi 
+			e = new BigInteger(d.modInverse(phi).toString());										//e fait parti du couple de clï¿½s publique et vaut d^-1 mod phi 
 			System.out.println("e = " + e);
 			
 			//on affecte les variables au attributs de la classe
@@ -108,7 +107,7 @@ public class Cryptage {
 			this.publicKey = e;
 		}//computeRSA_Key
 		
-		private void genererPremier() {		//genere 200 000 nombres premiers en 1,5s (À REMPLACER PAR UNE LECTURE DE FICHIER)
+		private void genererPremier() {		//genere 200 000 nombres premiers en 1,5s (ï¿½ REMPLACER PAR UNE LECTURE DE FICHIER)
 			int a = 0;
 			int b = 0;
 			int pr;
@@ -135,36 +134,6 @@ public class Cryptage {
 			}
 		}//genererPremier
 		
-		private BigInteger modInv(BigInteger b, BigInteger n){
-			BigInteger n0 = n;
-			BigInteger b0 = b;
-			BigInteger t0 = BigInteger.ZERO;
-			BigInteger t = BigInteger.ONE;
-			BigInteger q = n0.divideAndRemainder(b0)[0];									//q = n0 / b0
-			BigInteger r = n0.subtract(q.multiply(b0));										//r = n0 - q * b0
-			
-			while (r.compareTo(BigInteger.ZERO) == 1){										//r > 0
-				BigInteger temp = t0.subtract(q.multiply(t));								//temp = t - q * t
-				
-				if (temp.compareTo(BigInteger.ZERO) == 1 || temp.equals(BigInteger.ZERO))	//temp >= 0 
-					temp = temp.mod(n);														//temp = temp % n
-				else
-					temp = n.subtract(temp.negate().mod(n));								//n - ((-temp) % n)
-				
-				t0 = t;
-				t = temp;
-				n0 = b0;
-				b0 = r;
-				q = n0.divideAndRemainder(b0)[0];											//q = n0 / b0
-				r = n0.subtract(q.multiply(b0));											//r = n0 - q * b0
-			}
-			
-			if (!b0.equals(BigInteger.ONE))													//b0 != 1
-				return null;
-			else
-				return t;
-		}//modInv
-		
 		@SuppressWarnings("unused")
 		private boolean isPremier(int number){
 			int nb 		 = number;
@@ -189,6 +158,7 @@ public class Cryptage {
 			return !test;
 		}//isPremier
 		
+		@SuppressWarnings("unused")
 		private int PGCD(BigInteger a, BigInteger b){
 			int res;
 //			System.out.println("etape 1");
@@ -209,6 +179,7 @@ public class Cryptage {
 				return a.intValue();
 		}//PGCD
 		
+		@SuppressWarnings("unused")
 		private BigInteger pow(BigInteger base, BigInteger exponent) {					//permet de calculer BigInteger puissance(BigInteger) 
 			BigInteger result = BigInteger.ONE;
 			while (exponent.signum() > 0) {
@@ -219,7 +190,7 @@ public class Cryptage {
 			return result;
 		}//powBI
 		
-		private byte[] ajoutByte(byte[] input){									//permet d'ajouter un byte valant 1 au début d'un tableau de bytes
+		private byte[] ajoutByte(byte[] input){									//permet d'ajouter un byte valant 1 au dï¿½but d'un tableau de bytes
 			byte[] toEdit = new byte[input.length+1];
 			toEdit[0] = 1;
 		    for (int i = 0; i < input.length; i++) {
@@ -228,7 +199,7 @@ public class Cryptage {
 		    return toEdit;
 		}//ajoutByte
 		
-		private byte[] removeByte(byte[] input){								//permet d'enlever le premier byte d'un tableau de bytes (à utiliser avec la fonction ajoutByte
+		private byte[] removeByte(byte[] input){								//permet d'enlever le premier byte d'un tableau de bytes (ï¿½ utiliser avec la fonction ajoutByte
 			byte[] toEdit = new byte[input.length-1];
 		    for (int i = 0; i < toEdit.length; i++) {
 		    	toEdit[i] = input[i+1];
@@ -239,31 +210,31 @@ public class Cryptage {
 		public Vector<BigInteger> convert (String toConvert){					//permet de recevoir une String contenant un Vector<BigInteger> et de le reformer
 //			System.out.println(System.currentTimeMillis());
 			Vector<BigInteger> receivedData = new Vector<BigInteger>();
-			StringBuilder tmp = new StringBuilder(toConvert);					//on utilise un StringBuilder pour pouvoir enlever facilement le crochet au début et à la fin de la chaine
+			StringBuilder tmp = new StringBuilder(toConvert);					//on utilise un StringBuilder pour pouvoir enlever facilement le crochet au dï¿½but et ï¿½ la fin de la chaine
 			tmp.deleteCharAt(0);	
 			tmp.deleteCharAt(tmp.length()-1);
 			toConvert = tmp.toString();											//on remet dans une String pour traiter le contenu
 			
 //			System.out.println(toConvert);
 			
-			String tmpStr = "";													//String temporaire servant à stocker le nombre courant
-			for(int i = 0; i < toConvert.length();){							//Une itération de i correspond à BigInteger récupéré
-				for (int j = i; j < toConvert.length(); j++, i++){				//Une itération de j correspond à un caractère de la chaine traitée
-					if (!(toConvert.charAt(i) == ',') && !(toConvert.charAt(i) == ' ')){	//si on ne rencontre pas d'espace ni de virgule, on stocke le caractère courant
+			String tmpStr = "";													//String temporaire servant ï¿½ stocker le nombre courant
+			for(int i = 0; i < toConvert.length();){							//Une itï¿½ration de i correspond ï¿½ BigInteger rï¿½cupï¿½rï¿½
+				for (int j = i; j < toConvert.length(); j++, i++){				//Une itï¿½ration de j correspond ï¿½ un caractï¿½re de la chaine traitï¿½e
+					if (!(toConvert.charAt(i) == ',') && !(toConvert.charAt(i) == ' ')){	//si on ne rencontre pas d'espace ni de virgule, on stocke le caractï¿½re courant
 						tmpStr += toConvert.charAt(i);
-					}else{																	//sinon c'est qu'on est arrivé au bout du nombre courant et on passe au traitement du nombre
+					}else{																	//sinon c'est qu'on est arrivï¿½ au bout du nombre courant et on passe au traitement du nombre
 						j++;													
 						i++;
 						break;
 					}
 				}
-				if (tmpStr.length() != 0)										//on vérifie si la String n'est pas vide 
+				if (tmpStr.length() != 0)										//on vï¿½rifie si la String n'est pas vide 
 					receivedData.addElement(new BigInteger(tmpStr));			//avant de la transformer en BigInteger et de la stocker dans le vector
 				tmpStr = "";													//on vide la String temporaire pour passer au nombre suivant
 			}
 //			System.out.println(receivedData.toString());
 //			toConvert.split("\\,");
-//			System.out.println(System.currentTimeMillis());			//pour vérifier que l'algo d'extraction ne soit pas trop long
+//			System.out.println(System.currentTimeMillis());			//pour vï¿½rifier que l'algo d'extraction ne soit pas trop long
 			return receivedData;
 		}//convert(String)
 		
@@ -295,7 +266,7 @@ public class Cryptage {
 //	public static void main(String[] args) {
 //		Cryptage test = new Cryptage();
 //        test.computeRSA_Key();
-//		String messageTest = "Bonjour je pärle avec des accents et tout. Bon y a pas trop d'accents mais au moins je peux crypter une phrase de deux kilomètres.";
+//		String messageTest = "Bonjour je pï¿½rle avec des accents et tout. Bon y a pas trop d'accents mais au moins je peux crypter une phrase de deux kilomï¿½tres.";
 //		
 //		test.cypherTab = test.encrypt(messageTest);
 //		
@@ -307,7 +278,7 @@ public class Cryptage {
 //        
 //        test.plainPhrase = test.decrypt(test.convert(transfert));
 //        
-//        System.out.println("\nMessage décodé : " + test.plainPhrase);
+//        System.out.println("\nMessage dï¿½codï¿½ : " + test.plainPhrase);
 //
 //    }
 }

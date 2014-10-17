@@ -1,3 +1,4 @@
+package com.example.blackbox;
 import java.io.*;
 /*
  * This class defines the different type of messages that will be exchanged between the
@@ -13,8 +14,8 @@ public class ChatMessage implements Serializable {
 	// WHOISIN to receive the list of the users connected
 	// MESSAGE an ordinary message
 	// LOGOUT to disconnect from the Server
-	// KEYS pour l'échange de clés
-	static final int PASSWORD = 0, MESSAGE = 1, LOGOUT = 2, KEYCommon = 3, KEYPublic = 4, KEYPrivate = 5, ConnectERR = 6, ConnectOK = 7, MP = 8;
+	// KEYS pour l'ï¿½change de clï¿½s
+	static final int PASSWORD = 0, MESSAGE = 1, LOGOUT = 2, KEYCommon = 3, KEYPublic = 4, KEYPrivate = 5, ConnectERR = 6, ConnectOK = 7;
 	private int type;
 	private String message;
 	private String dest;
@@ -37,11 +38,6 @@ public class ChatMessage implements Serializable {
 	int getType() {
 		return type;
 	}
-	
-	void setType(int type){
-		this.type = type;
-	}
-	
 	String getMessage() {
 		return message;
 	}

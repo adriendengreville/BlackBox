@@ -104,18 +104,19 @@ public class Server {
 		}
 	}//broadcast
 	
-	private ClientThread mpTO (String username){
-		for(int i = 0; i < clientList.size(); i++)
-			if (clientList.get(i).username == username)
-				return clientList.get(i);
-		
-		return null;	//si le client n'existe pas
-	}
+	private void mpTO (String dest, ChatMessage message){
+		for(int i = clientList.size(); --i >= 0;){
+			String name = clientList.get(i).username;
+			
+			if (name.equals(dest)){
+				sendTo(clientList.get(i), message);
+				return;
+			}
+		}
+		mpTO(message.getSender(), new ChatMessage(ChatMessage.MESSAGE, serverKeys.encrypt("Erreur : l'utilisateur " + message.getDest() + " est introuvable.").toString()));
+	}//MPTO
 	
 	private synchronized void sendTo(ClientThread client, ChatMessage message) {	//envoyer un message à un destinataire en particulier
-		if(client == null)	//si jamais le client cherché dans le cas des MP n'existe pas
-			return;
-		
 		message.setDest(client.username);
 
 		if (message.getSender().equals("null"))
@@ -200,11 +201,9 @@ public class Server {
 				
 				display("Obtention de la clé publique de " + username + "." );
 
-				getClientKeys();			//on récupère les clés du client
-				display(clientKeys.getCommonKey() + " " + clientKeys.getPublicKey());
-				display("Envoi de la clé publique du serveur.");
+//				getClientKeys();			//on récupère les clés du client
 				
-				sendKey();
+//				sendKey();
 			}
 			catch (IOException e) {
 				display(username + " : Erreur lors de la création d'Input/output Streams: " + e);
@@ -243,11 +242,11 @@ public class Server {
 
 		public void run() {			//ce qui tourne en boucle jusqu'à une deconnexion ou autre
 			boolean keepGoing = true;
-			
+
 			while(keepGoing) {
 				if (socket.isClosed())									//si le socket est fermé on a plus rien à faire ici
 					break;
-				
+
 				try {
 					message = (ChatMessage) sInput.readObject();		//récupération des objets ChatMessage
 				}
@@ -267,12 +266,19 @@ public class Server {
 					display(username + " s'est déconnecté.");
 					keepGoing = false;
 					break;
-				}
+				case ChatMessage.KEYCommon:
+					sendKey(ChatMessage.KEYCommon, message.getMessage());
+					break;
+				case ChatMessage.KEYPublic:
+					sendKey(ChatMessage.KEYPublic, message.getMessage());
+					break;
+				case ChatMessage.MP:
+					mpTO(message.getDest(), message);
+				}				
 			}
-			
 			removeClient(id);	//retire ce client de la liste des clients 
 			close();			//avant de fermer le socket
-		}
+		}//run
 		
 		private void close() {	//on ferme tout ce qu'on a ouvert
 			try {
@@ -305,13 +311,24 @@ public class Server {
 			return true;
 		}
 		
-		private void sendKey(){			//permet l'échange des clés entre le client et le serveur
-			if (clientCommonKeyGiven && clientPublicKeyGiven){	//une fois qu'on a la clé publique du client on peut lui envoyer les clés du serveur
+		private void sendKey(int type, String key){
+			if (type == ChatMessage.KEYCommon){
+				clientKeys.setCommonKey(new BigInteger(key));
+				clientCommonKeyGiven = true;
+			}
+			else if (type == ChatMessage.KEYPublic){
+				clientKeys.setPublicKey(new BigInteger(key));
+				clientPublicKeyGiven = true;
+			}
+			
+			if (clientCommonKeyGiven && clientPublicKeyGiven){
 				sendTo(this, new ChatMessage(ChatMessage.KEYCommon, clientKeys.encrypt(serverKeys.getCommonKey()).toString()));
 				sendTo(this, new ChatMessage(ChatMessage.KEYPublic, clientKeys.encrypt(serverKeys.getPublicKey()).toString()));
 				sendTo(this, new ChatMessage(ChatMessage.KEYPrivate, clientKeys.encrypt(serverKeys.getPrivateKey()).toString()));
 				clientCommonKeyGiven = false;
 				clientPublicKeyGiven = false;
+				display(clientKeys.getCommonKey() + " " + clientKeys.getPublicKey());
+				display("Envoi de la clé publique du serveur.");
 			}
 		}
 	}

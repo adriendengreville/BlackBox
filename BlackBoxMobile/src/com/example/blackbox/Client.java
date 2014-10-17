@@ -1,13 +1,14 @@
+package com.example.blackbox;
 
 import java.math.BigInteger;
 import java.net.*;
 import java.io.*;
 import java.security.PublicKey;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-
-import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
+import com.example.blackbox.R;
+import com.example.blackbox.R.layout;
+import com.example.blackbox.R.menu;
 
 public class Client  {
 
@@ -15,30 +16,26 @@ public class Client  {
 	private ObjectOutputStream sOutput;		
 	private Socket socket;
 
-	private ClientGUI clientUI;
+	private MainActivity clientUI;
 	
 	private String server, username;
 	private int port;
 	
-	private SimpleDateFormat simpleDate;			//un format de date cool pour afficher l'heure
-	
-	Cryptage clientKeys;	//module de cryptage/décryptage côté client
-	Cryptage serverKeys;	//module de cryptage/décryptage des messages du/au serveur
+	Cryptage clientKeys;	//module de cryptage/dÃ©cryptage cÃ©tÃ© client
+	Cryptage serverKeys;	//module de cryptage/dÃ©cryptage des messages du/au serveur
 
 	
-	Client(String server, int port, String username, ClientGUI clientUI) {
+	Client(String server, int port, String username, MainActivity clientUI) {
 		this.server = server;
 		this.port = port;
 		this.username = username;
 
 		this.clientUI = clientUI;
 		
-		simpleDate = new SimpleDateFormat("HH:mm:ss");
+		clientKeys = new Cryptage();	//dÃ©marage du module de cryptage client
+		clientKeys.computeRSA_Key();	//gÃ©nÃ©re les clÃ©s de cryptage du client
 		
-		clientKeys = new Cryptage();	//démarage du module de cryptage client
-		clientKeys.computeRSA_Key();	//génère les clés de cryptage du client
-		
-		serverKeys = new Cryptage();	//démarrage du module de cryptage serveur
+		serverKeys = new Cryptage();	//dÃ©marrage du module de cryptage serveur
 	}//ClientCSTR
 	
 	
@@ -57,15 +54,15 @@ public class Client  {
 			sOutput = new ObjectOutputStream(socket.getOutputStream());
 		}
 		catch (IOException eIO) {
-			display("Erreur lors de la création des Input/output Streams: " + eIO);
+			display("Erreur lors de la crÃ©ation des Input/output Streams: " + eIO);
 			return false;
 		}
  
-		new ListenFromServer().start();	//on commence à écouter ce que dis le serveur
+		new ListenFromServer().start();	//on commence Ã© Ã©couter ce que dis le serveur
 		
 		try
 		{
-			sOutput.writeObject(username);		//première comm : envois du pseudo
+			sOutput.writeObject(username);		//premiÃ©re comm : envois du pseudo
 		}
 		catch (IOException eIO) {
 			display("Erreur lors de l'envoi du pseudo: " + eIO);
@@ -74,14 +71,14 @@ public class Client  {
 		}
 	
 		this.sendInit(new ChatMessage(ChatMessage.PASSWORD, clientUI.getPassword()));
-		display("Mot de passe envoyé au serveur.");
+		display("Mot de passe envoyÃ© au serveur.");
 		
 		this.sendInit(new ChatMessage(ChatMessage.KEYCommon, clientKeys.getCommonKey()));
-		display("Clé commune envoyée au serveur (" + clientKeys.getCommonKey() + ")");
+		display("ClÃ© commune envoyÃ©e au serveur (" + clientKeys.getCommonKey() + ")");
 		this.sendInit(new ChatMessage(ChatMessage.KEYPublic, clientKeys.getPublicKey()));
-		display("Clé publique envoyée au serveur (" + clientKeys.getPublicKey() + ")");
+		display("ClÃ© publique envoyÃ©e au serveur (" + clientKeys.getPublicKey() + ")");
 		
-		display("Connexion acceptée par le serveur " + socket.getInetAddress() + ":" + socket.getPort() + ".");
+		display("Connexion acceptÃ©e par le serveur " + socket.getInetAddress() + ":" + socket.getPort() + ".");
 		
 		return true;
 	}
@@ -104,32 +101,8 @@ public class Client  {
 	
 	void sendMessage(ChatMessage msg) {
 		try {
-			msg.setSender(username);
-			msg.setTimeStamp(simpleDate.format(new Date()).toString());
-			
-			if (msg.getMessage().length() > 3 && msg.getMessage().substring(0, 3).equals("/to")){
-				StringBuilder transform = new StringBuilder(msg.getMessage());
-				transform = transform.delete(0, 4);
-				
-				String name = "";
-				
-				for (int i = 0; i < transform.length();){
-					if(transform.charAt(i) == ' '){
-						transform = transform.deleteCharAt(i);
-						break;
-					}
-					name += transform.charAt(i);
-					transform = transform.deleteCharAt(i);
-				}
-				
-				msg.setDest(name);
-				msg.setMessage(transform.toString());
-				msg.setType(ChatMessage.MP);
-				display(msg.getTimeStamp() + " " + msg.getSender() + " : " + msg.getMessage());
-			}
-			
 			msg.setMessage(serverKeys.encrypt(msg.getMessage()).toString());
-			
+			msg.setSender(username);
 			sOutput.writeObject(msg);
 		}
 		catch(IOException e) {
@@ -173,20 +146,20 @@ public class Client  {
 				try {
 					msgIN = (ChatMessage) sInput.readObject();
 					
-					if (msgIN.getType() == ChatMessage.MESSAGE || msgIN.getType() == ChatMessage.MP){
+					if (msgIN.getType() == ChatMessage.MESSAGE){
 						display(msgIN.getTimeStamp() + " " + msgIN.getSender() + " : " + serverKeys.decrypt(serverKeys.convert(msgIN.getMessage())));
 					}else if (msgIN.getType() == ChatMessage.KEYCommon) {
-						serverKeys.setCommonKey(new BigInteger(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage()))));		//on récupère la clé envoyée, que l'on convertit en vector, que l'on décrypte, que l'on met dans le set de clés
-//						display(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage())));
+						serverKeys.setCommonKey(new BigInteger(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage()))));		//on rÃ©cupÃ©re la clÃ© envoyÃ©e, que l'on convertit en vector, que l'on dÃ©crypte, que l'on met dans le set de clÃ©s
+						display(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage())));
 					}else if (msgIN.getType() == ChatMessage.KEYPublic) {
 						serverKeys.setPublicKey(new BigInteger(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage()))));
-//						display(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage())));
+						display(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage())));
 					}else if (msgIN.getType() == ChatMessage.KEYPrivate) {
 						serverKeys.setPrivateKey(new BigInteger(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage()))));
-//						display(serverKeys.getPrivateKey());
+						display(serverKeys.getPrivateKey());
 					}
 				} catch(IOException e) {
-					display("Erreur connexion refusée");
+					display("Erreur connexion refusÃ©e");
 					if(clientUI != null) 
 						clientUI.connectionFailed();
 					break;
