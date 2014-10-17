@@ -180,12 +180,14 @@ public class Server {
 				sInput  = new ObjectInputStream(socket.getInputStream());
 
 				username = (String) sInput.readObject();	//le premier objet envoyé par le client sera le pseudo donc on le stocke
+
 				try {
 					message = (ChatMessage) sInput.readObject();
 				} catch (ClassNotFoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				display("Mot de passe essayé : " + message.getMessage()) ;
 				if(!message.getMessage().equals(serverUI.getPassword())) {					//vérification du mot de passe
 					display(username + " : Mot de passe incorrect. Déconnexion.");
 //					sendTo(this, new ChatMessage(ChatMessage.ConnectERR, ""));				//on prévient le client qu'il a été rejeté
@@ -195,6 +197,14 @@ public class Server {
 //					sendTo(this, new ChatMessage(ChatMessage.ConnectOK, ""));
 					display(username + " s'est connecté.");
 				}
+				
+				display("Obtention de la clé publique de " + username + "." );
+
+				getClientKeys();			//on récupère les clés du client
+				display(clientKeys.getCommonKey() + " " + clientKeys.getPublicKey());
+				display("Envoi de la clé publique du serveur.");
+				
+				sendKey();
 			}
 			catch (IOException e) {
 				display(username + " : Erreur lors de la création d'Input/output Streams: " + e);
@@ -202,6 +212,32 @@ public class Server {
 			}
 			catch (ClassNotFoundException e) {
 				System.out.println("outch");
+			}
+		}//ClientThreadCSTR
+		
+		private synchronized void getClientKeys(){
+			try {
+				message = (ChatMessage) sInput.readObject();
+			} catch (ClassNotFoundException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			if (message.getType() == ChatMessage.KEYCommon){
+				clientKeys.setCommonKey(new BigInteger(message.getMessage()));
+				clientCommonKeyGiven = true;
+			}
+
+			try {
+				message = (ChatMessage) sInput.readObject();
+			} catch (ClassNotFoundException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			if (message.getType() == ChatMessage.KEYPublic){
+				clientKeys.setPublicKey(new BigInteger(message.getMessage()));
+				clientPublicKeyGiven = true;
 			}
 		}
 
@@ -230,12 +266,6 @@ public class Server {
 				case ChatMessage.LOGOUT:
 					display(username + " s'est déconnecté.");
 					keepGoing = false;
-					break;
-				case ChatMessage.KEYCommon:
-					sendKey(ChatMessage.KEYCommon, message.getMessage());
-					break;
-				case ChatMessage.KEYPublic:
-					sendKey(ChatMessage.KEYPublic, message.getMessage());
 					break;
 				}
 			}
@@ -275,16 +305,7 @@ public class Server {
 			return true;
 		}
 		
-		private void sendKey(int type, String key){			//permet l'échange des clés entre le client et le serveur
-			if (type == ChatMessage.KEYCommon){
-				clientKeys.setCommonKey(new BigInteger(key));
-				clientCommonKeyGiven = true;
-			}
-			else if (type == ChatMessage.KEYPublic){
-				clientKeys.setPublicKey(new BigInteger(key));
-				clientPublicKeyGiven = true;
-			}
-			
+		private void sendKey(){			//permet l'échange des clés entre le client et le serveur
 			if (clientCommonKeyGiven && clientPublicKeyGiven){	//une fois qu'on a la clé publique du client on peut lui envoyer les clés du serveur
 				sendTo(this, new ChatMessage(ChatMessage.KEYCommon, clientKeys.encrypt(serverKeys.getCommonKey()).toString()));
 				sendTo(this, new ChatMessage(ChatMessage.KEYPublic, clientKeys.encrypt(serverKeys.getPublicKey()).toString()));

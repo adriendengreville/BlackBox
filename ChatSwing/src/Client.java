@@ -2,7 +2,9 @@
 import java.math.BigInteger;
 import java.net.*;
 import java.io.*;
+import java.security.PublicKey;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
 
@@ -44,62 +46,41 @@ public class Client  {
 			return false;
 		}		
 	
-		/* Creating both Data Stream */
 		try
 		{
 			sInput  = new ObjectInputStream(socket.getInputStream());
 			sOutput = new ObjectOutputStream(socket.getOutputStream());
 		}
 		catch (IOException eIO) {
-			display("Exception creating new Input/output Streams: " + eIO);
+			display("Erreur lors de la création des Input/output Streams: " + eIO);
 			return false;
 		}
-
-		// creates the Thread to listen from the server 
-		new ListenFromServer().start();
-		// Send our username to the server this is the only message that we
-		// will send as a String. All other messages will be ChatMessage objects
+ 
+		new ListenFromServer().start();	//on commence à écouter ce que dis le serveur
 		
 		try
 		{
-			sOutput.writeObject(username);
+			sOutput.writeObject(username);		//première comm : envois du pseudo
 		}
 		catch (IOException eIO) {
-			display("Erreur lors de la l'envoi du pseudo : " + eIO);
+			display("Erreur lors de l'envoi du pseudo: " + eIO);
 			disconnect();
 			return false;
 		}
-
-		display("Soumission du mot de passe au serveur.");
-		
+	
 		this.sendInit(new ChatMessage(ChatMessage.PASSWORD, clientUI.getPassword()));
+		display("Mot de passe envoyé au serveur.");
 		
-//		ChatMessage reponse = null;
-//
-//		reponse = (ChatMessage) sInput.readObject();
-//
-//		if(reponse.getType() == ChatMessage.ConnectERR){										//on vérifie si le mot de passe est bon
-//			display("La connexion a été refusée par le serveur car le mot de passe est incorrect.");
-//			disconnect();
-//			return false;
-//		}else if (reponse.getType() == ChatMessage.ConnectOK){
-//			display("Le mot de passe a été accepté par le serveur.");
-//		}
-
-		
-			
 		this.sendInit(new ChatMessage(ChatMessage.KEYCommon, clientKeys.getCommonKey()));
-		System.out.println("clé envoyée");
+		display("Clé commune envoyée au serveur (" + clientKeys.getCommonKey() + ")");
 		this.sendInit(new ChatMessage(ChatMessage.KEYPublic, clientKeys.getPublicKey()));
+		display("Clé publique envoyée au serveur (" + clientKeys.getPublicKey() + ")");
 		
 		display("Connexion acceptée par le serveur " + socket.getInetAddress() + ":" + socket.getPort() + ".");
 		
-		return true;		
+		return true;
 	}
 
-	/*
-	 * To send a message to the console or the GUI
-	 */
 	private void display(String msg) {
 		clientUI.append(msg + "\n");		// append to the ClientGUI JTextArea (or whatever)
 	}
@@ -148,7 +129,6 @@ public class Client  {
 		// inform the GUI
 		if(clientUI != null)
 			clientUI.connectionFailed();
-			
 	}
 	
 	/*
@@ -168,8 +148,10 @@ public class Client  {
 						display(msgIN.getTimeStamp() + " " + msgIN.getSender() + " : " + serverKeys.decrypt(serverKeys.convert(msgIN.getMessage())));
 					}else if (msgIN.getType() == ChatMessage.KEYCommon) {
 						serverKeys.setCommonKey(new BigInteger(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage()))));		//on récupère la clé envoyée, que l'on convertit en vector, que l'on décrypte, que l'on met dans le set de clés
+						display(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage())));
 					}else if (msgIN.getType() == ChatMessage.KEYPublic) {
 						serverKeys.setPublicKey(new BigInteger(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage()))));
+						display(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage())));
 					}else if (msgIN.getType() == ChatMessage.KEYPrivate) {
 						serverKeys.setPrivateKey(new BigInteger(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage()))));
 						display(serverKeys.getPrivateKey());
@@ -180,8 +162,8 @@ public class Client  {
 						clientUI.connectionFailed();
 					break;
 				}
-				// can't happen with a String object but need the catch anyhow
 				catch(ClassNotFoundException e2) {
+					//RAF
 				}
 			}
 		}
