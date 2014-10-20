@@ -1,3 +1,4 @@
+package blackBox;
 
 import java.math.BigInteger;
 import java.net.*;
@@ -75,7 +76,6 @@ public class Client  {
 	
 		this.sendInit(new ChatMessage(ChatMessage.PASSWORD, clientUI.getPassword()));
 		display("Mot de passe envoyé au serveur.");
-		
 		this.sendInit(new ChatMessage(ChatMessage.KEYCommon, clientKeys.getCommonKey()));
 		display("Clé commune envoyée au serveur (" + clientKeys.getCommonKey() + ")");
 		this.sendInit(new ChatMessage(ChatMessage.KEYPublic, clientKeys.getPublicKey()));

@@ -1,3 +1,4 @@
+package blackBox;
 import javax.swing.*;
 
 import java.awt.*;

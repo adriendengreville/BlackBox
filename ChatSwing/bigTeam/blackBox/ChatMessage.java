@@ -1,3 +1,4 @@
+package blackBox;
 import java.io.*;
 /*
  * This class defines the different type of messages that will be exchanged between the

@@ -1,3 +1,4 @@
+package blackBox;
 /*
  * Description : Cette classe est l'implémentation de tout ce qui concerne le codage des informations.
  */
