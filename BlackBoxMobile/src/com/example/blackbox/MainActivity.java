@@ -6,7 +6,9 @@ import com.example.blackbox.R.layout;
 import com.example.blackbox.R.menu;
 
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.app.Activity;
+import android.content.Context;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
@@ -26,6 +28,7 @@ public class MainActivity extends Activity {
 	Button send = null;
 	Client client = null;
 	ToggleButton connect = null;
+	static MainActivity mApp = null;
 	
 	private boolean connected;
 	
@@ -41,7 +44,13 @@ public class MainActivity extends Activity {
         chatBox = (TextView)findViewById(R.id.ChatRoom);
         send = (Button) findViewById(R.id.send);
         connect = (ToggleButton)findViewById(R.id.connect);
-                
+        
+        mApp = this;
+        
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+
+        StrictMode.setThreadPolicy(policy); 
+        
         connect.setOnCheckedChangeListener( new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton toggleButton, boolean isChecked) {
@@ -70,22 +79,34 @@ public class MainActivity extends Activity {
 		connected = false;
     }//connectionFailed
     
+    public static Context context()
+    {
+        return mApp.getApplicationContext();
+    }
+    
     private void setState(boolean isChecked){
     	if(isChecked) {
     		// ok it is a connection request
     		String username = pseudo.getText().toString().trim();
     		// empty username ignore it
-    		if(username.length() == 0)
+    		if(username.length() == 0 || username.contains(" ")){
+    			connect.setChecked(false);
     			return;
+    		}
     		// empty serverAddress ignore it
     		String server = adresse.getText().toString().trim();
-    		if(server.length() == 0)
+    		if(server.length() == 0){
+    			connect.setChecked(false);
     			return;
+    		}
     		// try creating a new Client with GUI
     		client = new Client(server, 1664, username, this);
     		// test if we can start the Client
-    		if(!client.start()) 
+    		client.run();
+    		if(!client.getSuccess()){
+    			connect.setChecked(false);
     			return;
+    		}
     		message.setText("");
     		connected = true;
     		// Action listener for when the user enter a message
@@ -96,7 +117,7 @@ public class MainActivity extends Activity {
                 }
             });
     	}else if(!isChecked){
-    		client.sendMessage(new ChatMessage(ChatMessage.LOGOUT, ""));
+//    		client.sendMessage(new ChatMessage(ChatMessage.LOGOUT, ""));
 			return;
     	}
     }//setState
