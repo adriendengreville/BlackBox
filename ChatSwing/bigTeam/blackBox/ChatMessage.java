@@ -1,30 +1,32 @@
 package blackBox;
 import java.io.*;
 /*
- * Cette classe défini les différents types de messages qui seront échangés entre 
+ * Cette classe dÃ©fini les diffÃ©rents types de messages qui seront Ã©changÃ©s entre 
  * les clients et le serveur.
  */
 public class ChatMessage implements Serializable {
-
+//ATTRIBUTS------------------------------------------------------------------------------------------------
 	protected static final long serialVersionUID = 1112122200L;
 
-	// Les différents types de messages:
+	// Les diffÃ©rents types de messages:
 	// PASSWORD pour un envois de mot de passe
-	// MESSAGE pour un message normal transmit à tout le canal
-	// LOGOUT pour signifier une déconnexion
-	// KEY(Common/Public/Private) pour l'échange de clés
-	// ConnectERR pour signifier une erreur de connexion à un client
-	// ConnectOK pour signifier la réussite de la connexion au client
-	// MP pour un message perso destiné à un client en particulier
+	// MESSAGE pour un message normal transmit Ã  tout le canal
+	// LOGOUT pour signifier une dÃ©connexion
+	// KEY(Common/Public/Private) pour l'Ã©change de clÃ©s
+	// ConnectERR pour signifier une erreur de connexion Ã© un client
+	// ConnectOK pour signifier la rÃ©ussite de la connexion au client
+	// MP pour un message perso destinÃ© Ã  un client en particulier
 	
-	static final int PASSWORD = 0, MESSAGE = 1, LOGOUT = 2, KEYCommon = 3, KEYPublic = 4, KEYPrivate = 5, ConnectERR = 6, ConnectOK = 7, MP = 8;
+	public static final int PASSWORD = 0, MESSAGE = 1, LOGOUT = 2, KEYCommon = 3, KEYPublic = 4, KEYPrivate = 5, ConnectERR = 6, ConnectOK = 7, MP = 8;
 	private int type;
 	private String message;
 	private String dest;
 	private String timeStamp;
 	private String sender;
-	
-	ChatMessage(int type, String message) {	//constructeur des messages génériques
+	private String password;
+
+//MÃ‰THODES-------------------------------------------------------------------------------------------------
+	public ChatMessage(int type, String message) {	//constructeur des messages gÃ©nÃ©riques
 		this.type = type;
 		this.message = message;
 		this.sender = "null";
@@ -35,44 +37,52 @@ public class ChatMessage implements Serializable {
 		this.dest = dest;
 	}
 	
-	// getters
-	int getType() {
+//GETTERS--------------------------------------------------------------------------------------------------
+	public int getType() {
 		return type;
 	}
-	
-	void setType(int type){
+
+	public void setType(int type){
 		this.type = type;
 	}
 	
-	String getMessage() {
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	
+	public String getMessage() {
 		return message;
 	}
 	
-	void setMessage(String msg){
+	public void setMessage(String msg){
 		this.message = msg;
 	}
 	
-	String getDest(){
+	public String getDest(){
 		return this.dest;
 	}
 	
-	void setDest(String dest){
+	public void setDest(String dest){
 		this.dest = dest;
 	}
 	
-	void setTimeStamp(String time){
+	public void setTimeStamp(String time){
 		this.timeStamp = time;
 	}
 	
-	String getTimeStamp(){
+	public String getTimeStamp(){
 		return this.timeStamp;
 	}
 	
-	void setSender(String sender){
+	public void setSender(String sender){
 		this.sender = sender;
 	}
 	
-	String getSender(){
+	public String getSender(){
 		return this.sender;
 	}
 }

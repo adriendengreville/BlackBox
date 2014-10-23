@@ -3,19 +3,15 @@ package blackBox;
 import java.math.BigInteger;
 import java.net.*;
 import java.io.*;
-import java.security.PublicKey;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
-
-import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
 
 public class Client  {
-
+//ATTRIBUTS------------------------------------------------------------------------------------------------
 	private ObjectInputStream sInput;		
 	private ObjectOutputStream sOutput;		
 	private Socket socket;
-
+	
 	private ClientGUI clientUI;
 	
 	private String server, username;
@@ -23,11 +19,15 @@ public class Client  {
 	
 	private SimpleDateFormat simpleDate;			//un format de date cool pour afficher l'heure
 	
-	Cryptage clientKeys;	//module de cryptage/dÈcryptage cÙtÈ client
-	Cryptage serverKeys;	//module de cryptage/dÈcryptage des messages du/au serveur
-
+	private Cryptage clientKeys;	//module de cryptage/d√©cryptage c√©t√© client
+	private Cryptage serverKeys;	//module de cryptage/d√©cryptage des messages du/au serveur
 	
-	Client(String server, int port, String username, ClientGUI clientUI) {
+	private Vector<String> comms = new Vector<String>();	//liste des commandes
+
+//M√âTHODES-------------------------------------------------------------------------------------------------
+	public Client(String server, int port, String username, ClientGUI clientUI) {
+		comms.add(("/to <pseudo> <message>"));	// on donne les commandes existantes
+		
 		this.server = server;
 		this.port = port;
 		this.username = username;
@@ -36,10 +36,11 @@ public class Client  {
 		
 		simpleDate = new SimpleDateFormat("HH:mm:ss");
 		
-		clientKeys = new Cryptage();	//dÈmarage du module de cryptage client
-		clientKeys.computeRSA_Key();	//gÈnËre les clÈs de cryptage du client
+		clientKeys = new Cryptage();	//d√©marage du module de cryptage client
+		clientKeys.computeRSA_Key();	//g√©n√©re les cl√©s de cryptage du client
 		
-		serverKeys = new Cryptage();	//dÈmarrage du module de cryptage serveur
+		serverKeys = new Cryptage();	//d√©marrage du module de cryptage serveur
+		
 	}//ClientCSTR
 	
 	
@@ -54,46 +55,32 @@ public class Client  {
 	
 		try
 		{
-			sInput  = new ObjectInputStream(socket.getInputStream());	//on crÈÈ les flux
+			sInput  = new ObjectInputStream(socket.getInputStream());	//on cr√©√© les flux
 			sOutput = new ObjectOutputStream(socket.getOutputStream());
 		}
 		catch (IOException eIO) {
-			display("Erreur lors de la crÈation des Input/output Streams: " + eIO);
+			display("Erreur lors de la cr√©ation des Input/output Streams: " + eIO);
 			return false;
 		}
  
-		new ListenFromServer().start();	//on commence ‡ Ècouter ce que dis le serveur
+		new ListenFromServer().start();	//on commence √† √©couter ce que dis le serveur
 		
 		try
 		{
-			sOutput.writeObject(username);		//premiËre comm : envois du pseudo
+			sOutput.writeObject(username);		//premi√®re comm : envois du pseudo
 		}
 		catch (IOException eIO) {
 			display("Erreur lors de l'envoi du pseudo: " + eIO);
 			disconnect();
 			return false;
 		}
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		try{
-		sOutput.writeObject("Is somebody out there?");
-		}catch (Exception e){
-			display("Nom d'utilisateur dÈj‡ utilisÈ.");
-			return false;
-		}
-		//TODO RÈgler le problËme d'authentification
-		this.sendInit(new ChatMessage(ChatMessage.PASSWORD, clientUI.getPassword()));		//envois mot de passe /!\ EN CLAIR DONC A DEPLACER /!\
-		display("Mot de passe envoyÈ au serveur.");
-		this.sendInit(new ChatMessage(ChatMessage.KEYCommon, clientKeys.getCommonKey()));	//envois de la clÈ publique
-		display("ClÈ commune envoyÈe au serveur (" + clientKeys.getCommonKey() + ")");
-		this.sendInit(new ChatMessage(ChatMessage.KEYPublic, clientKeys.getPublicKey()));
-		display("ClÈ publique envoyÈe au serveur (" + clientKeys.getPublicKey() + ")");
 		
-		display("Connexion acceptÈe par le serveur " + socket.getInetAddress() + ":" + socket.getPort() + ".");
+		this.sendInit(new ChatMessage(ChatMessage.KEYCommon, clientKeys.getCommonKey()));	//envois de la cl√© publique
+		this.sendInit(new ChatMessage(ChatMessage.KEYPublic, clientKeys.getPublicKey()));
+		display("Cl√© publique envoy√©e au serveur (" + clientKeys.getCommonKey() + " " + clientKeys.getPublicKey() + ")");
+		
+		display("Connexion accept√©e par le serveur " + socket.getInetAddress() + ":" + socket.getPort() + ".");
+		display("Le mot de passe sera valid√© lors de l'envoi d'un message.");
 		
 		return true;
 	}//start
@@ -102,41 +89,46 @@ public class Client  {
 		clientUI.append(msg + "\n");
 	}//display
 	
-	void sendInit(ChatMessage msg){ //pour envoyer un message non cryptÈ au serveur
+	private void sendInit(ChatMessage msg){ //pour envoyer un message non crypt√© au serveur
 		try {
 			sOutput.writeObject(msg);
 		}
 		catch(IOException e) {
-			display("Exception writing to server: " + e);
+			display("Erreur lors de l'envoi au serveur: " + e);
 		}
 	}//sendInit
 	
-	void sendMessage(ChatMessage msg) {		//permet de mettre en forme les messages et de les envoyer
+	public void sendMessage(ChatMessage msg) {		//permet de mettre en forme les messages et de les envoyer
 		try {
 			msg.setSender(username);
+			msg.setPassword(serverKeys.encrypt(clientUI.getPassword()).toString());
 			msg.setTimeStamp(simpleDate.format(new Date()).toString());
 			
-			if (msg.getMessage().length() > 3 && msg.getMessage().substring(0, 3).equals("/to")){	//module d'Èvalutation pour les MP
-				StringBuilder transform = new StringBuilder(msg.getMessage());
-				transform = transform.delete(0, 4);													//on supprime le mot clÈ "/to "
-				
-				String name = "";
-				
-				for (int i = 0; i < transform.length();){											//on extrait le nom d'utilisateur du destinataire du message
-					if(transform.charAt(i) == ' '){
+			if (msg.getMessage().length() > 1 && msg.getMessage().charAt(0) == '/'){					//module d'√©valuation des commandes
+				if (msg.getMessage().length() > 3 && msg.getMessage().substring(0, 3).equals("/to")){	//module d'√©valutation pour les MP
+					StringBuilder transform = new StringBuilder(msg.getMessage());
+					transform = transform.delete(0, 4);													//on supprime le mot cl√© "/to "
+
+					String name = "";
+
+					for (int i = 0; i < transform.length();){											//on extrait le nom d'utilisateur du destinataire du message
+						if(transform.charAt(i) == ' '){
+							transform = transform.deleteCharAt(i);
+							break;
+						}
+						name += transform.charAt(i);													//on le stocke
 						transform = transform.deleteCharAt(i);
-						break;
 					}
-					name += transform.charAt(i);													//on le stocke
-					transform = transform.deleteCharAt(i);
+
+					msg.setDest(name);																	//on r√©gle le destinataire dans les param√©tres du message
+					msg.setMessage(transform.toString());
+					msg.setType(ChatMessage.MP);
+					display(msg.getTimeStamp() + " " + msg.getSender() + " : " + msg.getMessage());
+				} else {
+					display("Cette commande n'est pas reconnue. Commandes existantes : " + comms);
+					return;
 				}
-				
-				msg.setDest(name);																	//on rËgle le destinataire dans les paramËtres du message
-				msg.setMessage(transform.toString());
-				msg.setType(ChatMessage.MP);
-				display(msg.getTimeStamp() + " " + msg.getSender() + " : " + msg.getMessage());
 			}
-			
 			msg.setMessage(serverKeys.encrypt(msg.getMessage()).toString());
 			
 			sOutput.writeObject(msg);
@@ -147,7 +139,7 @@ public class Client  {
 	}//sendMEssage
 
 	
-	private void disconnect() {	//pour dÈconnecter le client proprement
+	private void disconnect() {	//pour d√©connecter le client proprement
 		try { 
 			if(sInput != null) sInput.close();
 		}
@@ -165,25 +157,28 @@ public class Client  {
 			clientUI.connectionFailed();
 	}//disconnect
 	
-	class ListenFromServer extends Thread {	//thread permettant de lire depuis le rÈseau en boucle
+	private class ListenFromServer extends Thread {	//thread permettant de lire depuis le r√©seau en boucle
 		private ChatMessage msgIN;
 		
 		public void run() {
 			while(true) {
 				try {
-					msgIN = (ChatMessage) sInput.readObject();												//on rÈcupËre le message du rÈseau
+					msgIN = (ChatMessage) sInput.readObject();												//on r√©cup√©re le message du r√©seau
 					
 					if (msgIN.getType() == ChatMessage.MESSAGE || msgIN.getType() == ChatMessage.MP || msgIN.getType() == ChatMessage.LOGOUT){	//si on lit un message ou un MP
 						display(msgIN.getTimeStamp() + " " + msgIN.getSender() + " : " + serverKeys.decrypt(serverKeys.convert(msgIN.getMessage())));
-					}else if (msgIN.getType() == ChatMessage.KEYCommon) {	//tout ce qui concerne les clÈs
-						serverKeys.setCommonKey(new BigInteger(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage()))));		//on rÈcupËre la clÈ envoyÈe, que l'on convertit en vector, que l'on dÈcrypte, que l'on met dans le set de clÈs
+					}else if (msgIN.getType() == ChatMessage.KEYCommon) {	//tout ce qui concerne les cl√©s
+						serverKeys.setCommonKey(new BigInteger(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage()))));		//on r√©cup√©re la cl√© envoy√©e, que l'on convertit en vector, que l'on d√©crypte, que l'on met dans le set de cl√©s
 					}else if (msgIN.getType() == ChatMessage.KEYPublic) {
 						serverKeys.setPublicKey(new BigInteger(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage()))));
 					}else if (msgIN.getType() == ChatMessage.KEYPrivate) {
 						serverKeys.setPrivateKey(new BigInteger(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage()))));
+						display("Paire de cl√©s serveur re√ßues: Priv√©e => " + serverKeys.getCommonKey() + " " + serverKeys.getPrivateKey() + 
+								" ; Publique ==> " + serverKeys.getCommonKey() + " " + serverKeys.getPublicKey());
 					}
+					
 				} catch(IOException e) {
-					display("Erreur connexion refusÈe");
+					display("Perte de connexion (Mot de passe erron√©, nom d'utilisateur d√©j√† pris, erreur r√©seau...) ou d√©connexion.");
 					clientUI.connectionFailed();
 					break;
 				}
@@ -194,4 +189,4 @@ public class Client  {
 		}//run
 	}//listenFromServer
 }//Client
-
+	

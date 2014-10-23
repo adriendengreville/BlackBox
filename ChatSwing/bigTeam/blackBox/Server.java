@@ -5,11 +5,8 @@ import java.net.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-/*
- * The server that can be run both as a console application or a GUI
- */
 public class Server {
-	
+//ATTRIBUTS------------------------------------------------------------------------------------------------
 	private static int uniqueId;					//un ID pour chaque client
 	
 	private ArrayList<ClientThread> clientList;		//liste des clients (threads)
@@ -18,12 +15,13 @@ public class Server {
 	
 	private SimpleDateFormat simpleDate;			//un format de date cool pour afficher l'heure
 	
-	private static int port;						//port du serveur où les connexions sont attendues
+	private static int port;						//port du serveur oÃ© les connexions sont attendues
 	
 	private boolean keepGoing;						//le "bouton" ON/OFF du serveur
 	
-	Cryptage serverKeys;							//paire de clés du serveur qui sera transmise aux clients
+	protected Cryptage serverKeys;							//paire de clÃ©s du serveur qui sera transmise aux clients
 
+//MÃ‰THODES-------------------------------------------------------------------------------------------------
 	public Server(int port, ServerGUI serverUI) {
 		this.serverUI = serverUI;
 		Server.port = port;
@@ -33,13 +31,15 @@ public class Server {
 	
 	public void start() {
 		keepGoing = true;
-		serverKeys = new Cryptage();		//démarrage du module de cryptage
-		serverKeys.computeRSA_Key();		//création des clés privées et publiques du serveur qui seront transmises aux clients
+		
+		display("GÃ©nÃ©ration de la paire de clÃ©s du serveur.");
+		serverKeys = new Cryptage();		//dÃ©marrage du module de cryptage
+		serverKeys.computeRSA_Key();		//crÃ©ation des clÃ©s privÃ©es et publiques du serveur qui seront transmises aux clients
 
 		try 
 		{
 			ServerSocket serverSocket = new ServerSocket(port);			//socket serveur
-			while (keepGoing){ 	//boucle infinie pour toujours accepter les connexions, lié au bouton stop du serveur
+			while (keepGoing){ 	//boucle infinie pour toujours accepter les connexions, liÃ© au bouton stop du serveur
 				display("Serveur en attente de connexions sur le port " + port + ".");
 
 				Socket socket = serverSocket.accept();  				//accepter la connexion
@@ -49,12 +49,12 @@ public class Server {
 					break;
 
 				ClientThread clientThread = new ClientThread(socket);  	//placer la connexion dans un thread pour en faire un client
-				clientList.add(clientThread);							//l'ajouter à notre liste de clients
+				clientList.add(clientThread);							//l'ajouter Ã  notre liste de clients
 
-				clientThread.start();	// /!\Appelle le run du thread défini ci-bas
-			}//on sort après appuis du bouton stop
+				clientThread.start();	// /!\Appelle le run du thread dÃ©fini ci-bas
+			}//on sort aprÃ©s appuis du bouton stop
 
-			try {	//tout ce qui concerne la fermeture du serveur et des sockets et flux liés
+			try {	//tout ce qui concerne la fermeture du serveur et des sockets et flux liÃ©s
 				serverSocket.close();			
 				for(int i = 0; i < clientList.size(); ++i) {
 					ClientThread threadToClose = clientList.get(i);
@@ -69,11 +69,11 @@ public class Server {
 				}
 			}
 			catch(Exception e) {
-				display("Problème lors de la fermeture du client et du serveur: " + e);
+				display("ProblÃ©me lors de la fermeture du client et du serveur: " + e);
 			}
 		}
 		catch (IOException e) {
-			display("Problème lors de la création du socket serveur: " + e);
+			display("ProblÃ©me lors de la crÃ©ation du socket serveur: " + e);
 		}
 	}//start	
    
@@ -92,19 +92,19 @@ public class Server {
 		serverUI.appendEvent(simpleDate.format(new Date()) + " : " + msg + "\n");
 	}//display
 
-	private synchronized void broadcast(ChatMessage message) {	//envoyer un message à tout le monde dans le canal
+	private synchronized void broadcast(ChatMessage message) {	//envoyer un message Ã  tout le monde dans le canal
 		if (message.getSender().equals("null"))
 			message.setSender("Serveur");
 		
 		serverUI.appendRoom(message.getTimeStamp() + " " + message.getSender() +
-				" : " + "Message" + "\n");   		//affiche le message (crypté bien sûr) dans la fenêtre chat du serveur
+				" : " + "Message" + "\n");   		//affiche le message (cryptÃ© bien sÃ»r) dans la fenÃ©tre chat du serveur
 		
-		for(int i = clientList.size(); --i >= 0;) {				// backloop pour supprimer un client qui ne répond plus
+		for(int i = clientList.size(); --i >= 0;) {				// backloop pour supprimer un client qui ne rÃ©pond plus
 			ClientThread clientsToMessage = clientList.get(i);
 			
-			if(!clientsToMessage.writeMsg(message)) {			//d'une pierre deux coups, on tente d'envoyer le message et on teste si ça a marché pour savoir si on garde le client
+			if(!clientsToMessage.writeMsg(message)) {			//d'une pierre deux coups, on tente d'envoyer le message et on teste si Ã§a a marchÃ© pour savoir si on garde le client
 				clientList.remove(i);
-				display(clientsToMessage.username + " ne répond plus. Déconnecté du serveur.");
+				display(clientsToMessage.username + " ne rÃ©pond plus. DÃ©connectÃ© du serveur.");
 			}
 		}
 	}//broadcast
@@ -121,7 +121,7 @@ public class Server {
 		mpTO(message.getSender(), new ChatMessage(ChatMessage.MESSAGE, serverKeys.encrypt("Erreur : l'utilisateur " + message.getDest() + " est introuvable.").toString()));
 	}//MPTO
 	
-	private synchronized void sendTo(ClientThread client, ChatMessage message) {	//envoyer un message à un destinataire en particulier (pour MPs et connexions)
+	private synchronized void sendTo(ClientThread client, ChatMessage message) {	//envoyer un message Ã  un destinataire en particulier (pour MPs et connexions)
 		message.setDest(client.username);
 
 		if (message.getSender().equals("null"))
@@ -131,24 +131,24 @@ public class Server {
 		
 		String whatToWrite = message.getTimeStamp() + " " + message.getSender() + " --> " + message.getDest() + " :  ";
 		if (message.getType() == ChatMessage.KEYCommon || message.getType() == ChatMessage.KEYPrivate || message.getType() == ChatMessage.KEYPublic)
-			whatToWrite += " Échange de clés.";
+			whatToWrite += " Ã©change de clÃ©s.";
 		else
 			whatToWrite += "Message";
-		serverUI.appendRoom(whatToWrite + "\n"); //affiche le message (crypté bien sûr) dans la fenêtre chat du serveur et son destinataire
+		serverUI.appendRoom(whatToWrite + "\n"); //affiche le message (cryptÃ© bien sÃ»r) dans la fenÃªtre chat du serveur et son destinataire
 
 		for(int i = clientList.size(); --i >= 0;) {				//idem que pour brodcast sauf qu'on n'enverra qu'au client qui correspond
 			ClientThread clientToMessage = clientList.get(i);
 
 			if(clientToMessage.id == client.id && !client.writeMsg(message)) {	//on garde la boucle afin de pouvoir supprimer le client en cas de perte de connexion
 				clientList.remove(i);
-				display(clientToMessage.username + " ne répond plus. Déconnecté du serveur.");
+				display(clientToMessage.username + " ne rÃ©pond plus. DÃ©connectÃ© du serveur.");
 				break;
 			}
 		}
 	}//sendTo
 
 
-	synchronized void removeClient(int id) {	//pour retirer un client qui fait une deconnexion propre
+	public synchronized void removeClient(int id) {	//pour retirer un client qui fait une deconnexion propre
 		for(int i = 0; i < clientList.size(); ++i) {
 			ClientThread clientToRemove = clientList.get(i);
 
@@ -160,16 +160,17 @@ public class Server {
 	}//removeClient
 
 	
-	class ClientThread extends Thread {		//un thread par client qui tourne tant qu'il n'a pas été perçu comme déconnecté
-		Socket socket;					//socket pour écouter le client
+	private class ClientThread extends Thread {		//un thread par client qui tourne tant qu'il n'a pas Ã©tÃ© perÃ§u comme dÃ©connectÃ©
+		Socket socket;					//socket pour Ã©couter le client
 		ObjectInputStream sInput;		//et ses flux
 		ObjectOutputStream sOutput;
 		
-		Cryptage clientKeys;			//paire de clés transmises par le client
+		Cryptage clientKeys;			//paire de clÃ©s transmises par le client
 		
 		boolean  clientCommonKeyGiven = false;
 		boolean  clientPublicKeyGiven = false;
 		public boolean isUnique = false;
+		private boolean toKill = false;
 		
 		int id;
 		
@@ -182,53 +183,28 @@ public class Server {
 			this.socket = socket;
 			clientKeys = new Cryptage();
 
-			System.out.println("Création des Object Input/Output Streams par un thread client");
+			System.out.println("CrÃ©ation des Object Input/Output Streams par un thread client");
 			try
 			{
 				sOutput = new ObjectOutputStream(socket.getOutputStream());
 				sInput  = new ObjectInputStream(socket.getInputStream());
 
-				username = (String) sInput.readObject();	//le premier objet envoyé par le client sera le pseudo donc on le stocke
+				username = (String) sInput.readObject();	//le premier objet envoyÃ© par le client sera le pseudo donc on le stocke
 				
-				for( ClientThread clToTest : clientList){	//on vérifie que le nom n'est pas déjà pris
+				for( ClientThread clToTest : clientList){	//on vÃ©rifie que le nom n'est pas dÃ©jÃ© pris
 					if (clToTest.username.equals(username)){
 						removeClient(id);
+						display("Un utilisateur a essayÃ© de se connecter sous le nom de " + username + ", qui existe dÃ©jÃ .");
+						toKill = true;
 						close();
+						return;
 					}
 				}
-				
-				try {
-					String wreck = (String) sInput.readObject();
-				}catch (ClassNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				try {
-					message = (ChatMessage) sInput.readObject();
-				} catch (ClassNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			
-				display("Mot de passe essayé : " + message.getMessage()) ;
-				if(!message.getMessage().equals(serverUI.getPassword())) {					//vérification du mot de passe
-					display(username + " : Mot de passe incorrect. Déconnexion.");
-//					sendTo(this, new ChatMessage(ChatMessage.ConnectERR, ""));				//on prévient le client qu'il a été rejeté
-					removeClient(id);
-					close();
-				}else {
-//					sendTo(this, new ChatMessage(ChatMessage.ConnectOK, ""));
-					display(username + " s'est connecté.");
-				}
-				
-				display("Obtention de la clé publique de " + username + "." );
 
-//				getClientKeys();			//on récupère les clés du client
-				
-//				sendKey();
+				display("Obtention de la clÃ© publique de " + username + "." );
 			}
 			catch (IOException e) {
-				display(username + " : Erreur lors de la création d'Input/output Streams: " + e);
+				display(username + " : Erreur lors de la crÃ©ation d'Input/output Streams: " + e);
 				return;
 			}
 			catch (ClassNotFoundException e) {
@@ -236,56 +212,40 @@ public class Server {
 			}
 		}//ClientThreadCSTR
 		
-		private synchronized void getClientKeys(){
-			try {
-				message = (ChatMessage) sInput.readObject();
-			} catch (ClassNotFoundException | IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			if (message.getType() == ChatMessage.KEYCommon){
-				clientKeys.setCommonKey(new BigInteger(message.getMessage()));
-				clientCommonKeyGiven = true;
-			}
-
-			try {
-				message = (ChatMessage) sInput.readObject();
-			} catch (ClassNotFoundException | IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			if (message.getType() == ChatMessage.KEYPublic){
-				clientKeys.setPublicKey(new BigInteger(message.getMessage()));
-				clientPublicKeyGiven = true;
-			}
-		}
-
-		public void run() {			//ce qui tourne en boucle jusqu'à une deconnexion ou autre
+		public void run() {			//ce qui tourne en boucle jusqu'Ã  une deconnexion ou autre
 			boolean keepGoing = true;
-
+			
+			if (toKill)				//si l'utilisateur n'a pas le droit d'Ãªtre connectÃ©, on le supprimer d'office
+				return;
+			
 			while(keepGoing) {
-				if (socket.isClosed())									//si le socket est fermé on a plus rien à faire ici
+				if (socket.isClosed())									//si le socket est fermÃ© on a plus rien Ã  faire ici
 					break;
 
 				try {
-					message = (ChatMessage) sInput.readObject();		//récupération des objets ChatMessage
+					message = (ChatMessage) sInput.readObject();		//rÃ©cupÃ©ration des objets ChatMessage
 				}
 				catch (IOException e) {
-					display(username + " : Problème lors de la lecture des flux: " + e);
+					display(username + " : ProblÃ©me lors de la lecture des flux: " + e);
 					break;				
 				}
-				catch(ClassNotFoundException e2) {		//je vois pas comment ça pourrait arriver mais on se protège quand même
+				catch(ClassNotFoundException e2) {		//je vois pas comment Ã©a pourrait arriver mais on se protÃ©ge quand mÃ©me
+					break;
+				}
+				
+				if ((message.getType() == ChatMessage.MESSAGE || message.getType() == ChatMessage.MP) &&
+						!serverKeys.decrypt(serverKeys.convert(message.getPassword())).equals(serverUI.getPassword())){	//on test le mot de passe si on reÃ§oit un message ou un mp
+					display(username + " : Mot de passe incorrect. DÃ©connexion.");
+					removeClient(id);
 					break;
 				}
 
-				switch(message.getType()) {				//on regarde ce qu'on a reçu
+				switch(message.getType()) {				//on regarde ce qu'on a reÃ§u
 				case ChatMessage.MESSAGE:
 					broadcast(message);
 					break;
 				case ChatMessage.LOGOUT:
-					display(username + " s'est déconnecté.");
+					display(username + " s'est dÃ©connectÃ©.");
 					keepGoing = false;
 					break;
 				case ChatMessage.KEYCommon:
@@ -317,18 +277,18 @@ public class Server {
 			catch (Exception e) {}
 		}
 
-		private boolean writeMsg(ChatMessage msg) {		//pour écrire au client
-			if(!socket.isConnected()) {		//si le client est déconnecté on ne va pas plus loin et on ferme tout
-//				removeClient(id);			//si writeMsg échoue le client sera retiré de la liste après, on s'en occupe pas ici
+		private boolean writeMsg(ChatMessage msg) {		//pour Ã©crire au client
+			if(!socket.isConnected()) {		//si le client est dÃ©connectÃ© on ne va pas plus loin et on ferme tout
+//				removeClient(id);			//si writeMsg Ã©choue le client sera retirÃ© de la liste aprÃ©s, on s'en occupe pas ici
 				close();
 				return false;
 			}
 
 			try {
-				sOutput.writeObject(msg);	//on écrit au client
+				sOutput.writeObject(msg);	//on Ã©crit au client
 			}
 			catch(IOException e) {
-				display("Erreur lors de l'envoi à " + username + ". (" + e + ")");
+				display("Erreur lors de l'envoi Ã  " + username + ". (" + e + ")");
 			}
 			return true;
 		}
@@ -344,16 +304,17 @@ public class Server {
 			}
 			
 			if (clientCommonKeyGiven && clientPublicKeyGiven){
-				sendTo(this, new ChatMessage(ChatMessage.KEYCommon, clientKeys.encrypt(serverKeys.getCommonKey()).toString()));
-				sendTo(this, new ChatMessage(ChatMessage.KEYPublic, clientKeys.encrypt(serverKeys.getPublicKey()).toString()));
-				sendTo(this, new ChatMessage(ChatMessage.KEYPrivate, clientKeys.encrypt(serverKeys.getPrivateKey()).toString()));
+				sendTo(this, new ChatMessage(ChatMessage.KEYCommon, clientKeys.encrypt(serverKeys.getCommonKey()).toString()));		//COMMON
+				
+				sendTo(this, new ChatMessage(ChatMessage.KEYPublic, clientKeys.encrypt(serverKeys.getPublicKey()).toString()));		//PUBLIC
+					
+				sendTo(this, new ChatMessage(ChatMessage.KEYPrivate, clientKeys.encrypt(serverKeys.getPrivateKey()).toString()));	//PRIVATE
+
 				clientCommonKeyGiven = false;
 				clientPublicKeyGiven = false;
-				display(clientKeys.getCommonKey() + " " + clientKeys.getPublicKey());
-				display("Envoi de la clé publique du serveur.");
+				display("ClÃ© publique reÃ§ue de " + username + ": " + clientKeys.getCommonKey() + " " + clientKeys.getPublicKey());
+				display("Envoi de la clÃ© publique du serveur.");
 			}
 		}
 	}
 }
-
-
