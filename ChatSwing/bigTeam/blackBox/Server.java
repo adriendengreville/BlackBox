@@ -102,7 +102,7 @@ public class Server {
 		ChatMessage messageToSend = message;					//on créé un ChatMessage qui contiendra le message chiffré pour chaque client
 		for(int i = clientList.size(); --i >= 0;) {				// backloop pour supprimer un client qui ne répond plus
 			ClientThread clientsToMessage = clientList.get(i);
-			messageToSend.setMessage(clientList.get(i).clientKeys.encrypt(message.getMessage()).toString());	//on chiffre avec la clé client
+			messageToSend.setMessage(clientsToMessage.clientKeys.encrypt(message.getMessage()).toString());	//on chiffre avec la clé client
 
 			if(!clientsToMessage.writeMsg(messageToSend)) {			//d'une pierre deux coups, on tente d'envoyer le message et on teste si ça a marché pour savoir si on garde le client
 				clientList.remove(i);
@@ -150,7 +150,7 @@ public class Server {
 
 		for(int i = clientList.size(); --i >= 0;) {				//idem que pour brodcast sauf qu'on n'enverra qu'au client qui correspond
 			ClientThread clientToMessage = clientList.get(i);
-			message.setMessage(clientList.get(i).clientKeys.encrypt(message.getMessage()).toString());	//on chiffre avec la clé du destinataire
+			message.setMessage(clientToMessage.clientKeys.encrypt(message.getMessage()).toString());	//on chiffre avec la clé du destinataire
 			
 			if(clientToMessage.id == client.id && !client.writeMsg(message)) {	//on garde la boucle afin de pouvoir supprimer le client en cas de perte de connexion
 				clientList.remove(i);

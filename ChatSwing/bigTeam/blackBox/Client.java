@@ -166,7 +166,7 @@ public class Client  {
 					msgIN = (ChatMessage) sInput.readObject();												//on récupére le message du réseau
 					
 					if (msgIN.getType() == ChatMessage.MESSAGE || msgIN.getType() == ChatMessage.MP || msgIN.getType() == ChatMessage.LOGOUT){	//si on lit un message ou un MP
-						display(msgIN.getTimeStamp() + " " + msgIN.getSender() + " : " + clientKeys.decrypt(serverKeys.convert(msgIN.getMessage())));
+						display(msgIN.getTimeStamp() + " " + msgIN.getSender() + " : " + clientKeys.decrypt(clientKeys.convert(msgIN.getMessage())));
 					}else if (msgIN.getType() == ChatMessage.KEYCommon) {	//tout ce qui concerne les clés
 						serverKeys.setCommonKey(new BigInteger(clientKeys.decrypt(clientKeys.convert(msgIN.getMessage()))));		//on récupére la clé envoyée, que l'on convertit en vector, que l'on décrypte, que l'on met dans le set de clés
 					}else if (msgIN.getType() == ChatMessage.KEYPublic) {
