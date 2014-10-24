@@ -99,10 +99,12 @@ public class Server {
 		serverUI.appendRoom(message.getTimeStamp() + " " + message.getSender() +
 				" : " + "Message" + "\n");   		//affiche le message (crypté bien sûr) dans la fenétre chat du serveur
 		
+		ChatMessage messageToSend = message;					//on créé un ChatMessage qui contiendra le message chiffré pour chaque client
 		for(int i = clientList.size(); --i >= 0;) {				// backloop pour supprimer un client qui ne répond plus
 			ClientThread clientsToMessage = clientList.get(i);
-			
-			if(!clientsToMessage.writeMsg(message)) {			//d'une pierre deux coups, on tente d'envoyer le message et on teste si ça a marché pour savoir si on garde le client
+			messageToSend.setMessage(clientList.get(i).clientKeys.encrypt(message.getMessage()).toString());	//on chiffre avec la clé client
+
+			if(!clientsToMessage.writeMsg(messageToSend)) {			//d'une pierre deux coups, on tente d'envoyer le message et on teste si ça a marché pour savoir si on garde le client
 				clientList.remove(i);
 				display(clientsToMessage.username + " ne répond plus. Déconnecté du serveur.");
 			}
@@ -110,6 +112,7 @@ public class Server {
 	}//broadcast
 	
 	private void mpTO (String dest, ChatMessage message){
+		
 		for(int i = clientList.size(); --i >= 0;){
 			String name = clientList.get(i).username;
 			
@@ -118,7 +121,16 @@ public class Server {
 				return;
 			}
 		}
-		mpTO(message.getSender(), new ChatMessage(ChatMessage.MESSAGE, serverKeys.encrypt("Erreur : l'utilisateur " + message.getDest() + " est introuvable.").toString()));
+		
+		ClientThread sender = null;
+		for(int i = clientList.size(); --i >= 0;){ //on chercher l'émetteur en cas d'echec pour lui retourner l'erreur
+			String name = clientList.get(i).username;
+			if (name.equals(message.getSender())){
+				sender = clientList.get(i);
+				break;
+			}
+		}
+		mpTO(message.getSender(), new ChatMessage(ChatMessage.MESSAGE, sender.clientKeys.encrypt("Erreur : l'utilisateur " + message.getDest() + " est introuvable.").toString()));
 	}//MPTO
 	
 	private synchronized void sendTo(ClientThread client, ChatMessage message) {	//envoyer un message à un destinataire en particulier (pour MPs et connexions)
@@ -138,7 +150,8 @@ public class Server {
 
 		for(int i = clientList.size(); --i >= 0;) {				//idem que pour brodcast sauf qu'on n'enverra qu'au client qui correspond
 			ClientThread clientToMessage = clientList.get(i);
-
+			message.setMessage(clientList.get(i).clientKeys.encrypt(message.getMessage()).toString());	//on chiffre avec la clé du destinataire
+			
 			if(clientToMessage.id == client.id && !client.writeMsg(message)) {	//on garde la boucle afin de pouvoir supprimer le client en cas de perte de connexion
 				clientList.remove(i);
 				display(clientToMessage.username + " ne répond plus. Déconnecté du serveur.");
@@ -161,15 +174,14 @@ public class Server {
 
 	
 	private class ClientThread extends Thread {		//un thread par client qui tourne tant qu'il n'a pas été perçu comme déconnecté
-		Socket socket;					//socket pour écouter le client
-		ObjectInputStream sInput;		//et ses flux
-		ObjectOutputStream sOutput;
+		private Socket socket;					//socket pour écouter le client
+		private ObjectInputStream sInput;		//et ses flux
+		private ObjectOutputStream sOutput;
 		
-		Cryptage clientKeys;			//paire de clés transmises par le client
+		public Cryptage clientKeys;			//paire de clés transmises par le client
 		
-		boolean  clientCommonKeyGiven = false;
-		boolean  clientPublicKeyGiven = false;
-		public boolean isUnique = false;
+		private boolean  clientCommonKeyGiven = false;
+		private boolean  clientPublicKeyGiven = false;
 		private boolean toKill = false;
 		
 		int id;
@@ -226,7 +238,7 @@ public class Server {
 					message = (ChatMessage) sInput.readObject();		//récupération des objets ChatMessage
 				}
 				catch (IOException e) {
-					display(username + " : Probléme lors de la lecture des flux: " + e);
+					display(username + " : Problème lors de la lecture des flux: " + e);
 					break;				
 				}
 				catch(ClassNotFoundException e2) {		//je vois pas comment éa pourrait arriver mais on se protége quand méme
@@ -238,6 +250,12 @@ public class Server {
 					display(username + " : Mot de passe incorrect. Déconnexion.");
 					removeClient(id);
 					break;
+				}
+				
+				if (message.getType() == ChatMessage.MESSAGE || message.getType() == ChatMessage.MP){	//si c'est un message on le déchiffre
+					String messageRecu = serverKeys.decrypt(serverKeys.convert(message.getMessage()));		//pour le chiffre plus tard pour chaque client
+					message.setMessage(messageRecu);
+					display(messageRecu);
 				}
 
 				switch(message.getType()) {				//on regarde ce qu'on a reçu
@@ -304,11 +322,11 @@ public class Server {
 			}
 			
 			if (clientCommonKeyGiven && clientPublicKeyGiven){
-				sendTo(this, new ChatMessage(ChatMessage.KEYCommon, clientKeys.encrypt(serverKeys.getCommonKey()).toString()));		//COMMON
-				
-				sendTo(this, new ChatMessage(ChatMessage.KEYPublic, clientKeys.encrypt(serverKeys.getPublicKey()).toString()));		//PUBLIC
+				sendTo(this, new ChatMessage(ChatMessage.KEYCommon, serverKeys.getCommonKey().toString()));		//COMMON
+				display(serverKeys.getCommonKey().toString());
+				sendTo(this, new ChatMessage(ChatMessage.KEYPublic, serverKeys.getPublicKey().toString()));		//PUBLIC
 					
-				sendTo(this, new ChatMessage(ChatMessage.KEYPrivate, clientKeys.encrypt(serverKeys.getPrivateKey()).toString()));	//PRIVATE
+//				sendTo(this, new ChatMessage(ChatMessage.KEYPrivate, clientKeys.encrypt(serverKeys.getPrivateKey()).toString()));	//PRIVATE
 
 				clientCommonKeyGiven = false;
 				clientPublicKeyGiven = false;

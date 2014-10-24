@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 
 public class Cryptage {
 //ATTRIBUTS------------------------------------------------------------------------------------------------
@@ -233,13 +235,33 @@ public class Cryptage {
 	}//convert(String)
 	
 	public static void main(String[] args){
-		Cryptage crypto = new Cryptage();
-		crypto.computeRSA_Key();
-		String test = "BBB";
+		Cryptage crypto = new Cryptage();	//initialisation module 
+		crypto.computeRSA_Key();			//démarrage
+		String exemple = "Portez ce vieux whisky au juge blond qui fume sur son île intérieure,"
+				+ " à côté de l'alcôve ovoïde, où les bûches se consument dans l'âtre,"
+				+ " ce qui lui permet de penser à la cænogénèse de l'être dont il est question"
+				+ " dans la cause ambiguë entendue à Moÿ, dans un capharnaüm qui,"
+				+ " pense-t-il, diminue çà et là la qualité de son œuvre.";
 		
-		Vector<BigInteger> CypherTab = crypto.encrypt(test);
-		System.out.println(CypherTab.toString() + "\n");
-		System.out.println(crypto.decrypt(CypherTab));
+		Vector<Long> time = new Vector<Long>();
+		for (int i = 0; i < 1000; i++){		//on mesure 1000 chiffrements / déchiffrements
+			long timeStart = System.nanoTime();
+			Vector<BigInteger> CypherTab = crypto.encrypt(exemple);
+			crypto.decrypt(CypherTab);
+			time.add(System.nanoTime() - timeStart);
+			System.out.println(time.get(i));
+		}
+		
+		long averageDuration = 0;
+		time.remove(Collections.min(time));
+		time.remove(Collections.max(time));
+
+		for (int i = 0; i < time.size(); i++)
+			averageDuration += time.get(i);
+		
+		averageDuration /= time.size();
+		
+		System.out.println(TimeUnit.MILLISECONDS.convert(averageDuration, TimeUnit.NANOSECONDS));
 	} 
 	
 //SET-GETTER------------------------------------------------------------------------------------------------
