@@ -1,6 +1,5 @@
 package blackBox;
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
@@ -9,7 +8,11 @@ import java.io.InputStream;
  * La GUI du serveur
  */
 public class ServerGUI extends JFrame {
-//ATTRIBUTS------------------------------------------------------------------------------------------------
+/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	//ATTRIBUTS------------------------------------------------------------------------------------------------
 	private Server server;
 	private final int port = 1664;
 	private boolean running = false;
@@ -38,6 +41,7 @@ public class ServerGUI extends JFrame {
 		initUI();
 	}//ServerGUI
 	
+	@SuppressWarnings("serial")
 	private void initUI(){
 		frame = new JFrame();
 		frame.getContentPane().setBackground(Color.decode("#1d1d1d"));

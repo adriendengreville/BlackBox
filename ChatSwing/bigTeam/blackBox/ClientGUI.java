@@ -9,7 +9,12 @@ import java.io.InputStream;
 
 
 public class ClientGUI extends JFrame implements ActionListener {
-//ATTRIBUTS------------------------------------------------------------------------------------------------
+/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	//ATTRIBUTS------------------------------------------------------------------------------------------------
 	private JFrame frame;									//la fenètre principale
 	
 	private JTextField pseudoField;							//le champ pour entrer le nom d'utilisateur
@@ -54,6 +59,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 		passwordField.addActionListener(this);
 	}//ClientGUI_CSTR
 	
+	@SuppressWarnings("serial")
 	private void initialize() {						//initialisation de la GUI du client
 		//CUSTOM FONTS START
 			InputStream is = ClientGUI.class.getResourceAsStream("comesinhandy.ttf");	//chargement de la police des ressources

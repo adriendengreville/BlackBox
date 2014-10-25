@@ -256,7 +256,6 @@ public class Server {
 				if (message.getType() == ChatMessage.MESSAGE || message.getType() == ChatMessage.MP){	//si c'est un message on le déchiffre
 					String messageRecu = serverKeys.decrypt(serverKeys.convert(message.getMessage()));		//pour le chiffre plus tard pour chaque client
 					message.setMessage(messageRecu);
-					display(messageRecu);
 				}
 
 				switch(message.getType()) {				//on regarde ce qu'on a reçu
