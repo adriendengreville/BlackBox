@@ -37,6 +37,15 @@ public class ChatMessage implements Serializable {
 		this.dest = dest;
 	}
 	
+	public ChatMessage (ChatMessage toCopy){
+		this.type = toCopy.getType();
+		this.message = toCopy.getMessage();
+		this.dest = toCopy.dest;
+		this.timeStamp = toCopy.getTimeStamp();
+		this.sender = toCopy.getSender();
+		this.password = toCopy.getPassword();
+	}
+	
 //GETTERS--------------------------------------------------------------------------------------------------
 	public int getType() {
 		return type;

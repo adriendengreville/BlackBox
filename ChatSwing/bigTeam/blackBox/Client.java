@@ -19,7 +19,7 @@ public class Client  {
 	
 	private SimpleDateFormat simpleDate;			//un format de date cool pour afficher l'heure
 	
-	private Cryptage clientKeys;	//module de cryptage/décryptage cété client
+	private Cryptage clientKeys;	//module de cryptage/décryptage côté client
 	private Cryptage serverKeys;	//module de cryptage/décryptage des messages du/au serveur
 	
 	private Vector<String> comms = new Vector<String>();	//liste des commandes

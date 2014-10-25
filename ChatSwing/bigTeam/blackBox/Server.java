@@ -99,7 +99,7 @@ public class Server {
 		serverUI.appendRoom(message.getTimeStamp() + " " + message.getSender() +
 				" : " + "Message" + "\n");   		//affiche le message (crypté bien sûr) dans la fenétre chat du serveur
 		
-		ChatMessage messageToSend = message;					//on créé un ChatMessage qui contiendra le message chiffré pour chaque client
+		ChatMessage messageToSend = new ChatMessage(message);					//on créé un ChatMessage qui contiendra le message chiffré pour chaque client
 		for(int i = clientList.size(); --i >= 0;) {				// backloop pour supprimer un client qui ne répond plus
 			ClientThread clientsToMessage = clientList.get(i);
 			messageToSend.setMessage(clientsToMessage.clientKeys.encrypt(message.getMessage()).toString());	//on chiffre avec la clé client
@@ -148,11 +148,12 @@ public class Server {
 			whatToWrite += "Message";
 		serverUI.appendRoom(whatToWrite + "\n"); //affiche le message (crypté bien sûr) dans la fenêtre chat du serveur et son destinataire
 
+		ChatMessage messageToSend = new ChatMessage(message);
 		for(int i = clientList.size(); --i >= 0;) {				//idem que pour brodcast sauf qu'on n'enverra qu'au client qui correspond
 			ClientThread clientToMessage = clientList.get(i);
-			message.setMessage(clientToMessage.clientKeys.encrypt(message.getMessage()).toString());	//on chiffre avec la clé du destinataire
+			messageToSend.setMessage(clientToMessage.clientKeys.encrypt(message.getMessage()).toString());	//on chiffre avec la clé du destinataire
 			
-			if(clientToMessage.id == client.id && !client.writeMsg(message)) {	//on garde la boucle afin de pouvoir supprimer le client en cas de perte de connexion
+			if(clientToMessage.id == client.id && !client.writeMsg(messageToSend)) {	//on garde la boucle afin de pouvoir supprimer le client en cas de perte de connexion
 				clientList.remove(i);
 				display(clientToMessage.username + " ne répond plus. Déconnecté du serveur.");
 				break;
@@ -182,7 +183,7 @@ public class Server {
 		
 		private boolean  clientCommonKeyGiven = false;
 		private boolean  clientPublicKeyGiven = false;
-		private boolean toKill = false;
+		private boolean  toKill = false;
 		
 		int id;
 		
@@ -313,11 +314,11 @@ public class Server {
 		
 		private void sendKey(int type, String key){
 			if (type == ChatMessage.KEYCommon){
-				clientKeys.setCommonKey(new BigInteger(key));
+				this.clientKeys.setCommonKey(new BigInteger(key));
 				clientCommonKeyGiven = true;
 			}
 			else if (type == ChatMessage.KEYPublic){
-				clientKeys.setPublicKey(new BigInteger(key));
+				this.clientKeys.setPublicKey(new BigInteger(key));
 				clientPublicKeyGiven = true;
 			}
 			

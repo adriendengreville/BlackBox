@@ -82,6 +82,13 @@ public class ServerGUI extends JFrame {
 		password.setBounds(124, 71, 148, 20);
 		password.setBackground(UIManager.getColor("ComboBox.background"));
 		password.setColumns(10);
+		Action demarrage = new AbstractAction() {
+		    public void actionPerformed(ActionEvent e) {
+		    	bindStartStop();
+		    }
+		};
+		password.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "demarrage");
+		password.getActionMap().put("demarrage", demarrage);
 		frame.getContentPane().add(password);
 		
 		JLabel passwordLabel = new JLabel("Mot de passe");

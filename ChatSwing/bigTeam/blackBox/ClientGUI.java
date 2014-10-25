@@ -110,8 +110,23 @@ public class ClientGUI extends JFrame implements ActionListener {
 		messageBox.setBorder(null);
 		messageBox.setBackground(UIManager.getColor("ComboBox.background"));
 		messageBox.setBounds(10, 473, 645, 46);
+		Action send = new AbstractAction() {				//pour envoyer le message avec ENTER
+			public void actionPerformed(ActionEvent e) {
+				send();
+			}
+		};
+		Action returnLine = new AbstractAction() {			//pour faire un retour à la ligne avec SHIFT+ENTER
+			public void actionPerformed(ActionEvent e) {
+				messageBox.append("\n");
+			}
+		};
+		messageBox.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "envoyer");
+		messageBox.getActionMap().put("envoyer", send);
+		messageBox.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_MASK), "returnLine");
+		messageBox.getActionMap().put("returnLine", returnLine);
+		messageBox.setEnabled(false);
 		frame.getContentPane().add(messageBox);
-		
+
 		sendButton = new JButton("Envoyer");
 		sendButton.setBackground(Color.decode("#1d1d1d"));
 		sendButton.setForeground(new Color(239,244,255));		//Les couleurs sont réglées manuellement sur la plupart des éléments
@@ -166,6 +181,13 @@ public class ClientGUI extends JFrame implements ActionListener {
 		passwordField.setBorder(null);
 		passwordField.setBounds(312, 123, 136, 35);
 		passwordField.setBackground(UIManager.getColor("ComboBox.background"));
+		Action connexion = new AbstractAction() {
+		    public void actionPerformed(ActionEvent e) {
+		        connect();
+		    }
+		};
+		passwordField.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "connexion");
+		passwordField.getActionMap().put("connexion", connexion);
 		frame.getContentPane().add(passwordField);
 		
 		JLabel lblBlackboxProject = new JLabel("Blackbox Project");
@@ -260,11 +282,47 @@ public class ClientGUI extends JFrame implements ActionListener {
 	public void connectionFailed() {	//pour que le client puisse signaler un problème de connection
 		sendButton.removeActionListener(this);
 		sendButton.setEnabled(false);
+		messageBox.setEnabled(false);
 		quitNetwork.setEnabled(false);
 		joinNetwork.setEnabled(true);
 		connected = false;
 	}//connexion failed
+	
+	private void send(){
+		client.sendMessage(new ChatMessage(ChatMessage.MESSAGE, messageBox.getText()));				
+		messageBox.setText("");
+	}//send
 
+	private void connect(){
+		String username = pseudoField.getText().trim();			//on enlève les espaces autour du pseudo
+		if(username.length() == 0 || username.contains(" ")){	//on part si le champ et vide ou que le pseudo contient des espaces
+			append("Nom d'utilisateur nul ou contenant un espace \n");
+			return;
+		}
+
+		String server = ipField.getText().trim();	//on enlève les espaces éventuels autour de l'adresse
+		if(server.length() == 0)					//si le champ IP est vide on part
+			return;
+
+		client = new Client(server, port, username, this);	//et on créé
+
+		if(!client.start()) 								//on regarde si le lancement du client se passe bien
+			return;
+		messageBox.setText("");
+		connected = true;
+
+		sendButton.addActionListener(this);					//et on active le bouton envoyer
+		sendButton.setEnabled(true);
+		messageBox.setEnabled(true);
+
+		ipField.setEditable(false);							//on règle les boutons et champs de l'UI pour qu'ils se comportent logiquement
+		pseudoField.setEditable(false);
+		passwordField.setEditable(false);
+		
+		joinNetwork.setEnabled(false);
+		quitNetwork.setEnabled(true);
+	}//connect
+	
 	public void actionPerformed(ActionEvent e) {	//gestion des boutons		    
 		Object o = e.getSource();
 		if(o == quitNetwork && connected) {	//si ça vient du bouton de déconnexion
@@ -278,38 +336,12 @@ public class ClientGUI extends JFrame implements ActionListener {
 		}
 
 		if(connected) {				//si ça vient de l'autre bouton (envoyer) et qu'on est connecté 
-			client.sendMessage(new ChatMessage(ChatMessage.MESSAGE, messageBox.getText()));				
-			messageBox.setText("");
+			send();
 			return;
 		}
 		
 		if(o == joinNetwork) {		//si ça vient du bouton de connexion
-			String username = pseudoField.getText().trim();			//on enlève les espaces autour du pseudo
-			if(username.length() == 0 || username.contains(" ")){	//on part si le champ et vide ou que le pseudo contient des espaces
-				append("Nom d'utilisateur nul ou contenant un espace \n");
-				return;
-			}
-
-			String server = ipField.getText().trim();	//on enlève les espaces éventuels autour de l'adresse
-			if(server.length() == 0)					//si le champ IP est vide on part
-				return;
-
-			client = new Client(server, port, username, this);	//et on créé
-
-			if(!client.start()) 								//on regarde si le lancement du client se passe bien
-				return;
-			messageBox.setText("");
-			connected = true;
-
-			sendButton.addActionListener(this);					//et on active le bouton envoyer
-			sendButton.setEnabled(true);
-
-			ipField.setEditable(false);							//on règle les boutons et champs de l'UI pour qu'ils se comportent logiquement
-			pseudoField.setEditable(false);
-			passwordField.setEditable(false);
-			
-			joinNetwork.setEnabled(false);
-			quitNetwork.setEnabled(true);
+			connect();
 		}
 	}//actionPerformed
 	
